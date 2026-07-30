@@ -19,10 +19,8 @@
     "artigo_matricial": "R-4927",
     "freguesia": "Febres",
     "area": "0.205",
-    "plantacao": "",
-    "observacoes": [
-      "Eucaliptos"
-    ],
+    "plantacao": "Eucaliptos",
+    "observacoes": [],
     "kml": "kml/R-4927.kml"
   },
   {
