@@ -130,16 +130,24 @@
   .popup-nome{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;margin:0 0 8px;line-height:1.25;}
 
   .popup-plantacao-row{margin-bottom:10px;}
-  .popup-plantacao{font-size:0.8rem;color:var(--parchment-dim);font-style:italic;}
+  .popup-plantacao{font-size:0.8rem;color:var(--parchment-dim);}
+
+  .popup-coords-row{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    margin-bottom:12px;
+  }
+  .popup-coords{
+    font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--parchment-dim);
+  }
   .info-icon{
-    position:relative;display:inline-flex;vertical-align:middle;
-    width:26px;height:26px;margin-left:8px;border-radius:50%;border:1px solid var(--line);
+    position:relative;flex-shrink:0;
+    width:26px;height:26px;border-radius:50%;border:1px solid var(--line);
     background:transparent;color:var(--olive);cursor:pointer;padding:0;
-    align-items:center;justify-content:center;
+    display:flex;align-items:center;justify-content:center;
   }
   .info-icon svg{width:17px;height:17px;}
   .info-tooltip{
-    display:none;position:absolute;top:calc(100% + 8px);left:0;
+    display:none;position:absolute;bottom:calc(100% + 8px);right:0;
     width:220px;background:var(--pine);border:1px dashed var(--olive);border-radius:4px;
     padding:10px 12px;z-index:10;box-shadow:0 4px 14px rgba(0,0,0,0.4);text-align:left;
   }
@@ -152,10 +160,6 @@
   .info-tooltip li{font-size:0.75rem;color:var(--parchment-dim);margin-bottom:4px;line-height:1.35;}
   .info-tooltip li:last-child{margin-bottom:0;}
 
-  .popup-coords{
-    font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--parchment-dim);
-    margin-bottom:12px;
-  }
   .popup-botoes{display:flex;gap:6px;flex-wrap:nowrap;}
   .popup-botoes a{
     display:inline-flex;align-items:center;justify-content:center;gap:5px;flex:1;
@@ -255,9 +259,21 @@ document.addEventListener('click', (e) => {
   }
 });
 
+function formatArea(areaStr){
+  const ha = parseFloat(areaStr);
+  if (isNaN(ha)) return '';
+  if (ha < 0.05) {
+    return `${Math.round(ha * 10000)} m²`;
+  }
+  const s = ha.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+  return `${s} ha`;
+}
+
 function popupHTML(t, lat, lng){
   const titulo = t.descricao ? `${t.nome_predio} &mdash; ${t.descricao}` : t.nome_predio;
   const temObs = Array.isArray(t.observacoes) && t.observacoes.length > 0;
+  const areaTxt = formatArea(t.area);
+  const plantacaoTxt = t.plantacao ? `${t.plantacao} - ${areaTxt}` : areaTxt;
 
   const botaoInfo = temObs ? `
     <button type="button" class="info-icon" aria-label="Ver observações">${iconeInfo}</button>
@@ -266,15 +282,14 @@ function popupHTML(t, lat, lng){
       <ul>${t.observacoes.map(o => `<li>${o}</li>`).join('')}</ul>
     </div>` : '';
 
-  const linhaPlantacao = t.plantacao
-    ? `<div class="popup-plantacao-row"><span class="popup-plantacao">${t.plantacao}</span></div>`
-    : '';
-
   return `
     <div class="popup-eyebrow">Artigo ${t.artigo_matricial} &middot; ${t.freguesia}</div>
-    <div class="popup-nome">${titulo}${botaoInfo}</div>
-    ${linhaPlantacao}
-    <p class="popup-coords">${lat.toFixed(6)}, ${lng.toFixed(6)}</p>
+    <div class="popup-nome">${titulo}</div>
+    <div class="popup-plantacao-row"><span class="popup-plantacao">${plantacaoTxt}</span></div>
+    <div class="popup-coords-row">
+      <span class="popup-coords">${lat.toFixed(6)}, ${lng.toFixed(6)}</span>
+      ${botaoInfo}
+    </div>
     <div class="popup-botoes">
       <a href="${linkGoogle(lat,lng)}" target="_blank" rel="noopener">${iconePin}Google Maps</a>
       <a href="${linkApple(lat,lng)}" target="_blank" rel="noopener" class="apple">${iconeCompasso}Apple Maps</a>
