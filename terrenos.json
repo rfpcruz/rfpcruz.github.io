@@ -1,0 +1,66 @@
+[
+  {
+    "id": "r-3701",
+    "nome": "Quinta Baixa",
+    "artigo": "3701",
+    "freguesia": "Febres",
+    "concelho": "Cantanhede",
+    "kml": "kml/R-3701.kml"
+  },
+  {
+    "id": "r-4927",
+    "nome": "Rebolinho",
+    "artigo": "4927",
+    "freguesia": "Febres",
+    "concelho": "Cantanhede",
+    "kml": "kml/R-4927.kml"
+  },
+  {
+    "id": "r-5206",
+    "nome": "Pinheiros Bravos Novos",
+    "artigo": "5206",
+    "freguesia": "Febres",
+    "concelho": "Cantanhede",
+    "kml": "kml/R-5206.kml"
+  },
+  {
+    "id": "r-5207",
+    "nome": "Pinheiros Bravos Novos",
+    "artigo": "5207",
+    "freguesia": "Febres",
+    "concelho": "Cantanhede",
+    "kml": "kml/R-5207.kml"
+  },
+  {
+    "id": "r-5223",
+    "nome": "Artigo 5223",
+    "artigo": "5223",
+    "freguesia": "Febres",
+    "concelho": "Cantanhede",
+    "kml": "kml/R-5223.kml"
+  },
+  {
+    "id": "r-5224",
+    "nome": "Vinha Velha",
+    "artigo": "5224",
+    "freguesia": "Febres",
+    "concelho": "Cantanhede",
+    "kml": "kml/R-5224.kml"
+  },
+  {
+    "id": "r-5235",
+    "nome": "Vinha Avó",
+    "artigo": "5235",
+    "freguesia": "Febres",
+    "concelho": "Cantanhede",
+    "kml": "kml/R-5235.kml"
+  },
+  {
+    "id": "r-8204",
+    "nome": "Pinhal da Ursa",
+    "artigo": "8204",
+    "freguesia": "União das Freguesias de Cantanhede e Pocariça",
+    "concelho": "Cantanhede",
+    "kml": "kml/R-8204.kml"
+  }
+]
