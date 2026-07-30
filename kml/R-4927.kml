@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+<Document>
+	<name>R-4927.kml</name>
+	<Style id="defaultStyle">
+		<LineStyle>
+			<color>5f14b428</color>
+			<width>4</width>
+		</LineStyle>
+		<PolyStyle>
+			<color>5f14b428</color>
+		</PolyStyle>
+	</Style>
+	<Style id="defaultStyle0">
+		<LineStyle>
+			<color>5f14b428</color>
+			<width>4</width>
+		</LineStyle>
+		<PolyStyle>
+			<color>5f14b428</color>
+		</PolyStyle>
+	</Style>
+	<StyleMap id="defaultStyle1">
+		<Pair>
+			<key>normal</key>
+			<styleUrl>#defaultStyle</styleUrl>
+		</Pair>
+		<Pair>
+			<key>highlight</key>
+			<styleUrl>#defaultStyle0</styleUrl>
+		</Pair>
+	</StyleMap>
+	<Placemark>
+		<name>Rebolinho 4927</name>
+		<description>DISTRITO: 06 - COIMBRA CONCELHO: 02 - CANTANHEDE FREGUESIA: 07 - FEBRES
+ARTIGO MATRICIAL Nº: 4927</description>
+		<styleUrl>#defaultStyle1</styleUrl>
+		<Polygon>
+			<outerBoundaryIs>
+				<LinearRing>
+					<coordinates>
+						-8.649363899611249,40.42009625121861,0 -8.649348327897806,40.42004776656549,0 -8.649287437667219,40.41987077656754,0 -8.650792159450173,40.41993250498415,0 -8.650803621866123,40.42006652805875,0 -8.649363899611249,40.42009625121861,0 
+					</coordinates>
+				</LinearRing>
+			</outerBoundaryIs>
+		</Polygon>
+		<atom:link rel="app" href="https://www.google.com/earth/about/versions/#earth-pro" title="Google Earth Pro 7.3.6.10201"></atom:link>
+	</Placemark>
+</Document>
+</kml>
