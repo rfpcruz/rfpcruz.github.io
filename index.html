@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Os Meus Terrenos</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/@mapbox/togeojson@0.16.0/togeojson.js"></script>
+
+<style>
+  :root{
+    --pine:#16221C;
+    --pine-panel:#1F2E26;
+    --pine-panel-hover:#26362C;
+    --olive:#7FA65C;
+    --gold:#C9A84C;
+    --parchment:#EDE7D9;
+    --parchment-dim:#B9C0B4;
+    --line:#33443A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;background:var(--pine);font-family:'Inter',sans-serif;color:var(--parchment);}
+
+  #app{position:relative;height:100vh;width:100vw;overflow:hidden;}
+
+  /* ---- Top bar ---- */
+  #topbar{
+    position:absolute;top:0;left:0;right:0;height:60px;z-index:1100;
+    display:flex;align-items:center;gap:14px;padding:0 16px;
+    background:var(--pine-panel);border-bottom:1px solid var(--line);
+  }
+  #topbar-title{min-width:0;}
+  #topbar-title .eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;
+    text-transform:uppercase;color:var(--olive);margin:0;line-height:1.3;
+  }
+  #topbar-title h1{
+    font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem;margin:0;
+    letter-spacing:0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  #topbar-actions{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .pill{
+    font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--olive);
+    border:1px solid var(--line);border-radius:20px;padding:6px 12px;white-space:nowrap;
+  }
+  #verTodosBtn{
+    font-family:'Inter',sans-serif;font-size:0.78rem;font-weight:600;
+    color:var(--parchment);background:transparent;border:1px solid var(--line);
+    border-radius:6px;padding:8px 12px;cursor:pointer;white-space:nowrap;
+    transition:background .15s ease;
+  }
+  #verTodosBtn:hover{background:var(--pine-panel-hover);}
+
+  @media (max-width:520px){
+    #topbar-title .eyebrow{display:none;}
+    #topbar-title h1{font-size:1rem;max-width:38vw;}
+    #verTodosBtn span.texto-completo{display:none;}
+  }
+
+  /* ---- Sidebar (drawer, PC e mobile) ---- */
+  #sidebar{
+    position:fixed;top:0;left:0;bottom:0;width:340px;max-width:85%;
+    background:var(--pine-panel);border-right:1px solid var(--line);
+    display:flex;flex-direction:column;z-index:1400;
+    transform:translateX(-100%);
+    transition:transform .25s ease;
+    box-shadow:2px 0 20px rgba(0,0,0,0.4);
+  }
+  #sidebar.aberta{transform:translateX(0);}
+
+  #sidebar header{
+    position:relative;padding:22px 52px 16px 22px;border-bottom:1px solid var(--line);
+  }
+  #sidebar h1{
+    font-family:'Fraunces',serif;font-weight:600;font-size:1.5rem;margin:0 0 4px;
+    letter-spacing:0.01em;
+  }
+  #sidebar .eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:0.7rem;letter-spacing:0.12em;
+    text-transform:uppercase;color:var(--olive);margin:0 0 10px;
+  }
+  #sidebar .sub{font-size:0.85rem;color:var(--parchment-dim);margin:0;}
+
+  #closeBtn{
+    position:absolute;top:16px;right:16px;
+    width:32px;height:32px;border-radius:6px;border:1px solid var(--line);
+    background:transparent;color:var(--parchment);font-size:1.3rem;line-height:1;
+    cursor:pointer;
+  }
+
+  #lista{list-style:none;margin:0;padding:8px;overflow-y:auto;flex:1;}
+  #lista li{
+    padding:14px 14px;margin-bottom:6px;border-radius:6px;cursor:pointer;
+    border:1px solid transparent;
+    transition:background .15s ease, border-color .15s ease;
+  }
+  #lista li:hover, #lista li.ativo{
+    background:var(--pine-panel-hover);
+    border-color:var(--line);
+  }
+  #lista li.ativo{border-left:3px solid var(--gold);}
+  #lista .nome{font-weight:600;font-size:0.95rem;margin-bottom:3px;}
+  #lista .desc{font-size:0.8rem;color:var(--parchment-dim);margin-bottom:6px;}
+  #lista .meta{
+    font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--olive);
+    letter-spacing:0.02em;
+  }
+
+  /* ---- Map ---- */
+  #map{position:absolute;top:60px;left:0;right:0;bottom:0;background:var(--pine);}
+
+  /* ---- Hamburger menu ---- */
+  #menuBtn{
+    display:flex;flex-shrink:0;
+    width:38px;height:38px;border-radius:8px;border:1px solid var(--line);
+    background:var(--pine);cursor:pointer;
+    flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  }
+  #menuBtn span{width:18px;height:2px;background:var(--parchment);border-radius:2px;}
+
+  #overlay{
+    display:block;position:fixed;inset:0;background:rgba(0,0,0,0.5);
+    z-index:1300;opacity:0;pointer-events:none;transition:opacity .2s ease;
+  }
+  #overlay.visivel{opacity:1;pointer-events:auto;}
+
+  /* Leaflet popup restyle -- field-tag look */
+  .leaflet-popup-content-wrapper{
+    background:var(--pine-panel);color:var(--parchment);
+    border:1px dashed var(--olive);border-radius:4px;
+  }
+  .leaflet-popup-tip{background:var(--pine-panel);}
+  .leaflet-popup-content{margin:16px 18px;min-width:250px;}
+  .popup-eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.1em;
+    text-transform:uppercase;color:var(--olive);margin-bottom:6px;
+  }
+  .popup-nome{font-family:'Fraunces',serif;font-size:1.2rem;font-weight:600;margin:0 0 8px;line-height:1.25;}
+  .popup-coords{
+    font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--parchment-dim);
+    margin-bottom:12px;
+  }
+  .popup-botoes{display:flex;gap:6px;flex-wrap:nowrap;}
+  .popup-botoes a{
+    display:inline-flex;align-items:center;justify-content:center;gap:5px;flex:1;
+    font-family:'Inter',sans-serif;font-size:0.75rem;font-weight:600;text-decoration:none;
+    white-space:nowrap;
+    color:var(--pine);background:var(--gold);padding:7px 11px;border-radius:4px;
+    transition:filter .15s ease;
+  }
+  .popup-botoes a:hover{filter:brightness(1.1);}
+  .popup-botoes a svg{width:14px;height:14px;flex-shrink:0;}
+  .popup-botoes a.apple{background:transparent;color:var(--parchment);border:1px solid var(--line);}
+
+  /* Focus visibility */
+  a:focus-visible, li:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  #loading{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:var(--parchment-dim);font-family:'JetBrains Mono',monospace;font-size:0.8rem;
+    letter-spacing:0.08em;z-index:2000;background:var(--pine);
+  }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header id="topbar">
+    <button id="menuBtn" aria-label="Abrir lista de terrenos" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div id="topbar-title">
+      <p class="eyebrow">Cadastro de Campo</p>
+      <h1>Os Meus Terrenos</h1>
+    </div>
+    <div id="topbar-actions">
+      <span id="contagem" class="pill"></span>
+      <button id="verTodosBtn"><span class="texto-completo">Ver todos</span></button>
+    </div>
+  </header>
+  <div id="overlay"></div>
+  <aside id="sidebar">
+    <header>
+      <p class="eyebrow">Cadastro de Campo</p>
+      <h1>Os Meus Terrenos</h1>
+      <p class="sub">Toca num terreno para ver a ficha e abrir a navegação.</p>
+      <button id="closeBtn" aria-label="Fechar lista">&times;</button>
+    </header>
+    <ul id="lista"></ul>
+  </aside>
+  <main id="map">
+    <div id="loading">A carregar terrenos…</div>
+  </main>
+</div>
+
+<script>
+const map = L.map('map', {zoomControl:false}).setView([40.39, -8.648], 13);
+L.control.zoom({position:'bottomright'}).addTo(map);
+
+L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  attribution: 'Imagery &copy; Esri, Maxar, Earthstar Geographics',
+  maxZoom: 20
+}).addTo(map);
+
+const listaEl = document.getElementById('lista');
+const loadingEl = document.getElementById('loading');
+const sidebarEl = document.getElementById('sidebar');
+const menuBtn = document.getElementById('menuBtn');
+const closeBtn = document.getElementById('closeBtn');
+const overlayEl = document.getElementById('overlay');
+const contagemEl = document.getElementById('contagem');
+const verTodosBtn = document.getElementById('verTodosBtn');
+const camadas = {}; // id -> {layer, center}
+
+function abrirMenu(){
+  sidebarEl.classList.add('aberta');
+  overlayEl.classList.add('visivel');
+  menuBtn.setAttribute('aria-expanded', 'true');
+}
+function fecharMenu(){
+  sidebarEl.classList.remove('aberta');
+  overlayEl.classList.remove('visivel');
+  menuBtn.setAttribute('aria-expanded', 'false');
+}
+menuBtn.addEventListener('click', abrirMenu);
+closeBtn.addEventListener('click', fecharMenu);
+overlayEl.addEventListener('click', fecharMenu);
+
+function linkGoogle(lat, lng){ return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`; }
+function linkApple(lat, lng){ return `https://maps.apple.com/?daddr=${lat},${lng}`; }
+
+const iconePin = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>`;
+const iconeCompasso = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5 13 13l-3.5 1.5L11 11z"/></svg>`;
+
+function popupHTML(t, lat, lng){
+  const titulo = t.descricao ? `${t.nome_predio} &mdash; ${t.descricao}` : t.nome_predio;
+  return `
+    <div class="popup-eyebrow">Artigo ${t.artigo_matricial} &middot; ${t.freguesia}</div>
+    <p class="popup-nome">${titulo}</p>
+    <p class="popup-coords">${lat.toFixed(6)}, ${lng.toFixed(6)}</p>
+    <div class="popup-botoes">
+      <a href="${linkGoogle(lat,lng)}" target="_blank" rel="noopener">${iconePin}Google Maps</a>
+      <a href="${linkApple(lat,lng)}" target="_blank" rel="noopener" class="apple">${iconeCompasso}Apple Maps</a>
+    </div>
+  `;
+}
+
+function ativarItem(id){
+  document.querySelectorAll('#lista li').forEach(li => li.classList.toggle('ativo', li.dataset.id === id));
+}
+
+async function carregarTerreno(t){
+  const resp = await fetch(t.kml);
+  const kmlText = await resp.text();
+  const kmlDom = new DOMParser().parseFromString(kmlText, 'text/xml');
+  const geojson = toGeoJSON.kml(kmlDom);
+
+  const layer = L.geoJSON(geojson, {
+    style: { color: '#C9A84C', weight: 2, fillColor: '#7FA65C', fillOpacity: 0.28, dashArray: '5,4' }
+  }).addTo(map);
+
+  const center = layer.getBounds().getCenter();
+  layer.bindPopup(popupHTML(t, center.lat, center.lng), { offset: L.point(0, -16), autoPanPadding: L.point(30, 80) });
+  layer.on('click', () => ativarItem(t.id));
+
+  camadas[t.id] = { layer, center, bounds: layer.getBounds() };
+  return { layer, center };
+}
+
+async function iniciar(){
+  const resp = await fetch('terrenos.json');
+  const terrenos = await resp.json();
+
+  const allBounds = [];
+
+  for (const t of terrenos) {
+    try {
+      const { bounds } = await carregarTerreno(t);
+      allBounds.push(camadas[t.id].bounds);
+
+      const li = document.createElement('li');
+      li.dataset.id = t.id;
+      li.tabIndex = 0;
+      li.innerHTML = `
+        <div class="nome">${t.nome_predio}</div>
+        ${t.descricao ? `<div class="desc">${t.descricao}</div>` : ''}
+        <div class="meta">${t.artigo_matricial} &middot; ${t.freguesia}</div>
+      `;
+      li.addEventListener('click', () => {
+        map.flyToBounds(camadas[t.id].bounds, {padding:[60,60], maxZoom:18});
+        camadas[t.id].layer.openPopup();
+        ativarItem(t.id);
+        fecharMenu();
+      });
+      listaEl.appendChild(li);
+    } catch (e) {
+      console.error('Erro ao carregar', t.kml, e);
+    }
+  }
+
+  if (allBounds.length) {
+    const grupo = L.featureGroup(Object.values(camadas).map(c => c.layer));
+    map.fitBounds(grupo.getBounds(), {padding:[40,40]});
+    contagemEl.textContent = `${terrenos.length} terreno${terrenos.length === 1 ? '' : 's'}`;
+    verTodosBtn.addEventListener('click', () => {
+      map.fitBounds(grupo.getBounds(), {padding:[40,40]});
+      map.closePopup();
+    });
+  }
+
+  loadingEl.remove();
+}
+
+iniciar();
+</script>
+</body>
+</html>
