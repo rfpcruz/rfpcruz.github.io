@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Terreno da Quinta Velha</name>
+    <Placemark>
+      <name>Terreno da Quinta Velha</name>
+      <description>Terreno de olival, cerca de 1.2 hectares</description>
+      <Polygon>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>
+              -8.5980,40.3480,0
+              -8.5960,40.3480,0
+              -8.5960,40.3465,0
+              -8.5980,40.3465,0
+              -8.5980,40.3480,0
+            </coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+  </Document>
+</kml>
