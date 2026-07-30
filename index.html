@@ -28,6 +28,40 @@
 
   #app{position:relative;height:100vh;width:100vw;overflow:hidden;}
 
+  /* ---- Top bar ---- */
+  #topbar{
+    position:absolute;top:0;left:0;right:0;height:60px;z-index:1100;
+    display:flex;align-items:center;gap:14px;padding:0 16px;
+    background:var(--pine-panel);border-bottom:1px solid var(--line);
+  }
+  #topbar-title{min-width:0;}
+  #topbar-title .eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;
+    text-transform:uppercase;color:var(--olive);margin:0;line-height:1.3;
+  }
+  #topbar-title h1{
+    font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem;margin:0;
+    letter-spacing:0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  #topbar-actions{margin-left:auto;display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .pill{
+    font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--olive);
+    border:1px solid var(--line);border-radius:20px;padding:6px 12px;white-space:nowrap;
+  }
+  #verTodosBtn{
+    font-family:'Inter',sans-serif;font-size:0.78rem;font-weight:600;
+    color:var(--parchment);background:transparent;border:1px solid var(--line);
+    border-radius:6px;padding:8px 12px;cursor:pointer;white-space:nowrap;
+    transition:background .15s ease;
+  }
+  #verTodosBtn:hover{background:var(--pine-panel-hover);}
+
+  @media (max-width:520px){
+    #topbar-title .eyebrow{display:none;}
+    #topbar-title h1{font-size:1rem;max-width:38vw;}
+    #verTodosBtn span.texto-completo{display:none;}
+  }
+
   /* ---- Sidebar (drawer, PC e mobile) ---- */
   #sidebar{
     position:fixed;top:0;left:0;bottom:0;width:340px;max-width:85%;
@@ -78,17 +112,16 @@
   }
 
   /* ---- Map ---- */
-  #map{position:absolute;inset:0;background:var(--pine);}
+  #map{position:absolute;top:60px;left:0;right:0;bottom:0;background:var(--pine);}
 
   /* ---- Hamburger menu ---- */
   #menuBtn{
-    display:flex;position:absolute;top:14px;left:14px;z-index:1200;
-    width:44px;height:44px;border-radius:8px;border:1px solid var(--line);
-    background:var(--pine-panel);cursor:pointer;
+    display:flex;flex-shrink:0;
+    width:38px;height:38px;border-radius:8px;border:1px solid var(--line);
+    background:var(--pine);cursor:pointer;
     flex-direction:column;align-items:center;justify-content:center;gap:5px;
-    box-shadow:0 2px 10px rgba(0,0,0,0.35);
   }
-  #menuBtn span{width:20px;height:2px;background:var(--parchment);border-radius:2px;}
+  #menuBtn span{width:18px;height:2px;background:var(--parchment);border-radius:2px;}
 
   #overlay{
     display:block;position:fixed;inset:0;background:rgba(0,0,0,0.5);
@@ -115,12 +148,13 @@
   }
   .popup-botoes{display:flex;gap:6px;flex-wrap:wrap;}
   .popup-botoes a{
+    display:inline-flex;align-items:center;gap:5px;
     font-family:'Inter',sans-serif;font-size:0.75rem;font-weight:600;text-decoration:none;
-    color:var(--pine);background:var(--gold);padding:7px 10px;border-radius:4px;
+    color:var(--pine);background:var(--gold);padding:7px 11px;border-radius:4px;
     transition:filter .15s ease;
   }
   .popup-botoes a:hover{filter:brightness(1.1);}
-  .popup-botoes a.waze{background:var(--olive);color:var(--pine);}
+  .popup-botoes a svg{width:14px;height:14px;flex-shrink:0;}
   .popup-botoes a.apple{background:transparent;color:var(--parchment);border:1px solid var(--line);}
 
   /* Focus visibility */
@@ -136,9 +170,19 @@
 <body>
 
 <div id="app">
-  <button id="menuBtn" aria-label="Abrir lista de terrenos" aria-expanded="false">
-    <span></span><span></span><span></span>
-  </button>
+  <header id="topbar">
+    <button id="menuBtn" aria-label="Abrir lista de terrenos" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <div id="topbar-title">
+      <p class="eyebrow">Cadastro de Campo</p>
+      <h1>Os Meus Terrenos</h1>
+    </div>
+    <div id="topbar-actions">
+      <span id="contagem" class="pill"></span>
+      <button id="verTodosBtn"><span class="texto-completo">Ver todos</span></button>
+    </div>
+  </header>
   <div id="overlay"></div>
   <aside id="sidebar">
     <header>
@@ -169,6 +213,8 @@ const sidebarEl = document.getElementById('sidebar');
 const menuBtn = document.getElementById('menuBtn');
 const closeBtn = document.getElementById('closeBtn');
 const overlayEl = document.getElementById('overlay');
+const contagemEl = document.getElementById('contagem');
+const verTodosBtn = document.getElementById('verTodosBtn');
 const camadas = {}; // id -> {layer, center}
 
 function abrirMenu(){
@@ -186,8 +232,10 @@ closeBtn.addEventListener('click', fecharMenu);
 overlayEl.addEventListener('click', fecharMenu);
 
 function linkGoogle(lat, lng){ return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`; }
-function linkWaze(lat, lng){ return `https://waze.com/ul?ll=${lat},${lng}&navigate=yes`; }
 function linkApple(lat, lng){ return `https://maps.apple.com/?daddr=${lat},${lng}`; }
+
+const iconePin = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>`;
+const iconeCompasso = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5 13 13l-3.5 1.5L11 11z"/></svg>`;
 
 function popupHTML(t, lat, lng){
   return `
@@ -196,9 +244,8 @@ function popupHTML(t, lat, lng){
     <p class="popup-desc">${t.concelho} &middot; ${t.freguesia}</p>
     <p class="popup-coords">${lat.toFixed(6)}, ${lng.toFixed(6)}</p>
     <div class="popup-botoes">
-      <a href="${linkGoogle(lat,lng)}" target="_blank" rel="noopener">Google Maps</a>
-      <a href="${linkWaze(lat,lng)}" target="_blank" rel="noopener" class="waze">Waze</a>
-      <a href="${linkApple(lat,lng)}" target="_blank" rel="noopener" class="apple">Apple Maps</a>
+      <a href="${linkGoogle(lat,lng)}" target="_blank" rel="noopener">${iconePin}Google Maps</a>
+      <a href="${linkApple(lat,lng)}" target="_blank" rel="noopener" class="apple">${iconeCompasso}Apple Maps</a>
     </div>
   `;
 }
@@ -218,7 +265,7 @@ async function carregarTerreno(t){
   }).addTo(map);
 
   const center = layer.getBounds().getCenter();
-  layer.bindPopup(popupHTML(t, center.lat, center.lng));
+  layer.bindPopup(popupHTML(t, center.lat, center.lng), { offset: L.point(0, -16), autoPanPadding: L.point(30, 80) });
   layer.on('click', () => ativarItem(t.id));
 
   camadas[t.id] = { layer, center, bounds: layer.getBounds() };
@@ -245,7 +292,7 @@ async function iniciar(){
         <div class="coords">${camadas[t.id].center.lat.toFixed(5)}, ${camadas[t.id].center.lng.toFixed(5)}</div>
       `;
       li.addEventListener('click', () => {
-        map.flyToBounds(camadas[t.id].bounds, {padding:[60,60], maxZoom:17});
+        map.flyToBounds(camadas[t.id].bounds, {padding:[60,60], maxZoom:18});
         camadas[t.id].layer.openPopup();
         ativarItem(t.id);
         fecharMenu();
@@ -259,6 +306,11 @@ async function iniciar(){
   if (allBounds.length) {
     const grupo = L.featureGroup(Object.values(camadas).map(c => c.layer));
     map.fitBounds(grupo.getBounds(), {padding:[40,40]});
+    contagemEl.textContent = `${terrenos.length} terreno${terrenos.length === 1 ? '' : 's'}`;
+    verTodosBtn.addEventListener('click', () => {
+      map.fitBounds(grupo.getBounds(), {padding:[40,40]});
+      map.closePopup();
+    });
   }
 
   loadingEl.remove();
