@@ -79,6 +79,8 @@
   tbody tr:hover{background:var(--pine-panel-hover);}
   tbody tr:last-child td{box-shadow:none;}
   td.nome{font-weight:600;}
+  td.nome a{color:var(--parchment);text-decoration:none;border-bottom:1px dashed var(--olive);}
+  td.nome a:hover{color:var(--gold);border-bottom-color:var(--gold);}
   td.descricao{color:var(--parchment-dim);}
   td.artigo{white-space:nowrap;}
   td.obs ul{margin:0;padding-left:16px;}
@@ -123,7 +125,6 @@
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input type="text" id="busca" placeholder="Pesquisar por nome, freguesia, artigo, plantação, observações…" autocomplete="off">
   </div>
-  <p id="contagemResultados"></p>
 
   <div class="tabela-scroll">
     <table>
@@ -183,7 +184,7 @@ function linhaHTML(t){
     : '&mdash;';
   return `
     <tr data-busca="${normalizar([t.nome_predio, t.descricao, t.artigo_matricial, t.freguesia, t.plantacao, (t.observacoes||[]).join(' ')].join(' '))}">
-      <td class="nome">${t.nome_predio}</td>
+      <td class="nome"><a href="index.html?terreno=${t.id}">${t.nome_predio}</a></td>
       <td class="descricao">${t.descricao || '&mdash;'}</td>
       <td class="artigo">${t.artigo_matricial}</td>
       <td>${t.freguesia}</td>
@@ -205,8 +206,6 @@ async function iniciar(){
   const corpo = document.getElementById('corpoTabela');
   corpo.innerHTML = terrenos.map(linhaHTML).join('');
 
-  atualizarContagem(terrenos.length, terrenos.length);
-
   const buscaEl = document.getElementById('busca');
   buscaEl.addEventListener('input', () => {
     const termo = normalizar(buscaEl.value.trim());
@@ -217,14 +216,8 @@ async function iniciar(){
       tr.style.display = corresponde ? '' : 'none';
       if (corresponde) visiveis++;
     });
-    atualizarContagem(visiveis, terrenos.length);
     document.getElementById('semResultados').style.display = visiveis === 0 ? 'block' : 'none';
   });
-}
-
-function atualizarContagem(visiveis, total){
-  document.getElementById('contagemResultados').textContent =
-    visiveis === total ? `${total} prédio${total === 1 ? '' : 's'}` : `${visiveis} de ${total} prédios`;
 }
 
 iniciar();

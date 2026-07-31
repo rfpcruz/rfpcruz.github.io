@@ -367,7 +367,14 @@ async function iniciar(){
     }
   }
 
-  if (allBounds.length) {
+  const params = new URLSearchParams(window.location.search);
+  const terrenoAlvo = params.get('terreno');
+
+  if (terrenoAlvo && camadas[terrenoAlvo]) {
+    map.fitBounds(camadas[terrenoAlvo].bounds, {padding:[60,60], maxZoom:18});
+    camadas[terrenoAlvo].layer.openPopup();
+    ativarItem(terrenoAlvo);
+  } else if (allBounds.length) {
     const grupo = L.featureGroup(Object.values(camadas).map(c => c.layer));
     map.fitBounds(grupo.getBounds(), {padding:[40,40]});
   }
