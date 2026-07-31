@@ -65,15 +65,15 @@
   }
 
   .tabela-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;}
-  table{width:100%;border-collapse:separate;border-spacing:0;font-size:0.85rem;min-width:1020px;table-layout:fixed;}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:0.83rem;table-layout:fixed;}
   thead th{
-    text-align:left;font-family:'JetBrains Mono',monospace;font-size:0.68rem;
-    letter-spacing:0.08em;text-transform:uppercase;color:var(--olive);
-    background:var(--pine-panel);padding:12px 14px;
+    text-align:left;font-family:'JetBrains Mono',monospace;font-size:0.66rem;
+    letter-spacing:0.06em;text-transform:uppercase;color:var(--olive);
+    background:var(--pine-panel);padding:12px 10px;
     box-shadow:inset 0 -1px 0 var(--line);
   }
   tbody td{
-    padding:12px 14px;box-shadow:inset 0 -1px 0 var(--line);vertical-align:top;
+    padding:12px 10px;box-shadow:inset 0 -1px 0 var(--line);vertical-align:top;
     overflow-wrap:break-word;
   }
   tbody tr:hover{background:var(--pine-panel-hover);}
@@ -84,14 +84,14 @@
   td.obs ul{margin:0;padding-left:16px;}
   td.obs li{margin-bottom:3px;color:var(--parchment-dim);font-size:0.8rem;}
   td.obs li:last-child{margin-bottom:0;}
-  td.acoes{white-space:nowrap;}
+  td.acoes{white-space:nowrap;padding-left:8px;padding-right:8px;}
   td.acoes a{
-    display:inline-flex;align-items:center;justify-content:center;margin-right:6px;
-    width:30px;height:30px;border-radius:4px;
+    display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:4px;margin-right:4px;
     color:var(--pine);background:var(--gold);
   }
-  td.acoes a.apple{background:transparent;color:var(--parchment);border:1px solid var(--line);}
-  td.acoes a svg{width:15px;height:15px;}
+  td.acoes a.apple{background:transparent;color:var(--parchment);border:1px solid var(--line);margin-right:0;}
+  td.acoes a svg{width:13px;height:13px;}
 
   #semResultados{
     display:none;text-align:center;padding:40px 20px;color:var(--parchment-dim);
@@ -128,14 +128,14 @@
   <div class="tabela-scroll">
     <table>
       <colgroup>
+        <col style="width:135px">
+        <col style="width:145px">
+        <col style="width:78px">
         <col style="width:150px">
-        <col style="width:170px">
-        <col style="width:85px">
-        <col style="width:170px">
-        <col style="width:75px">
-        <col style="width:150px">
-        <col style="width:290px">
-        <col style="width:90px">
+        <col style="width:62px">
+        <col style="width:125px">
+        <col style="width:225px">
+        <col style="width:70px">
       </colgroup>
       <thead>
         <tr>
