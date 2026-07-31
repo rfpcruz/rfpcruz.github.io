@@ -10,7 +10,9 @@
     "observacoes": [
       "Confrontação com Zé da Ti Madalena"
     ],
-    "kml": "kml/R-3701.kml"
+    "kml": "kml/R-3701.kml",
+    "lat": 40.406207,
+    "lng": -8.648867
   },
   {
     "id": "r-4927",
@@ -19,9 +21,13 @@
     "artigo_matricial": "R-4927",
     "freguesia": "Febres",
     "area": "0.205",
-    "plantacao": "Eucaliptos",
-    "observacoes": [],
-    "kml": "kml/R-4927.kml"
+    "plantacao": "",
+    "observacoes": [
+      "Eucaliptos"
+    ],
+    "kml": "kml/R-4927.kml",
+    "lat": 40.420018,
+    "lng": -8.649827
   },
   {
     "id": "r-5206",
@@ -32,7 +38,9 @@
     "area": "0.143",
     "plantacao": "Pinheiros Mansos",
     "observacoes": [],
-    "kml": "kml/R-5206.kml"
+    "kml": "kml/R-5206.kml",
+    "lat": 40.413329,
+    "lng": -8.646468
   },
   {
     "id": "r-5207",
@@ -43,7 +51,9 @@
     "area": "0.143",
     "plantacao": "Pinheiros Mansos",
     "observacoes": [],
-    "kml": "kml/R-5207.kml"
+    "kml": "kml/R-5207.kml",
+    "lat": 40.41318,
+    "lng": -8.646544
   },
   {
     "id": "r-5223",
@@ -54,7 +64,9 @@
     "area": "0.106",
     "plantacao": "Pinheiros Mansos",
     "observacoes": [],
-    "kml": "kml/R-5223.kml"
+    "kml": "kml/R-5223.kml",
+    "lat": 40.412882,
+    "lng": -8.645044
   },
   {
     "id": "r-5224",
@@ -65,7 +77,9 @@
     "area": "0.106",
     "plantacao": "Pinheiros Mansos",
     "observacoes": [],
-    "kml": "kml/R-5224.kml"
+    "kml": "kml/R-5224.kml",
+    "lat": 40.412833,
+    "lng": -8.644995
   },
   {
     "id": "r-5235",
@@ -76,7 +90,9 @@
     "area": "0.12",
     "plantacao": "Pinheiros Mansos",
     "observacoes": [],
-    "kml": "kml/R-5235.kml"
+    "kml": "kml/R-5235.kml",
+    "lat": 40.412787,
+    "lng": -8.643746
   },
   {
     "id": "r-8204",
@@ -87,7 +103,9 @@
     "area": "2.582",
     "plantacao": "Pinhal",
     "observacoes": [],
-    "kml": "kml/R-8204.kml"
+    "kml": "kml/R-8204.kml",
+    "lat": 40.365292,
+    "lng": -8.650458
   },
   {
     "id": "r-8223",
@@ -98,7 +116,9 @@
     "area": "1.123",
     "plantacao": "Pinhal",
     "observacoes": [],
-    "kml": "kml/R-8223.kml"
+    "kml": "kml/R-8223.kml",
+    "lat": 40.359717,
+    "lng": -8.655139
   },
   {
     "id": "r-8777",
@@ -109,7 +129,9 @@
     "area": "0.2",
     "plantacao": "",
     "observacoes": [],
-    "kml": "kml/R-8777.kml"
+    "kml": "kml/R-8777.kml",
+    "lat": 40.403248,
+    "lng": -8.639994
   },
   {
     "id": "r-9191",
@@ -123,6 +145,8 @@
       "2023-11-23 Adjudicado com Idalino a limpeza",
       "2026-07-31 Estacas Oliveiras"
     ],
-    "kml": "kml/R-9191.kml"
+    "kml": "kml/R-9191.kml",
+    "lat": 40.400865,
+    "lng": -8.648939
   }
 ]
