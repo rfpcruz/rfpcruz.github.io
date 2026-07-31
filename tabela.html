@@ -65,7 +65,7 @@
   }
 
   .tabela-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;}
-  table{width:100%;border-collapse:separate;border-spacing:0;font-size:0.85rem;min-width:960px;table-layout:fixed;}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:0.85rem;min-width:1020px;table-layout:fixed;}
   thead th{
     text-align:left;font-family:'JetBrains Mono',monospace;font-size:0.68rem;
     letter-spacing:0.08em;text-transform:uppercase;color:var(--olive);
@@ -86,12 +86,12 @@
   td.obs li:last-child{margin-bottom:0;}
   td.acoes{white-space:nowrap;}
   td.acoes a{
-    display:inline-flex;align-items:center;gap:4px;margin-right:6px;
-    font-size:0.75rem;font-weight:600;text-decoration:none;
-    color:var(--pine);background:var(--gold);padding:5px 9px;border-radius:4px;
+    display:inline-flex;align-items:center;justify-content:center;margin-right:6px;
+    width:30px;height:30px;border-radius:4px;
+    color:var(--pine);background:var(--gold);
   }
   td.acoes a.apple{background:transparent;color:var(--parchment);border:1px solid var(--line);}
-  td.acoes a svg{width:12px;height:12px;}
+  td.acoes a svg{width:15px;height:15px;}
 
   #semResultados{
     display:none;text-align:center;padding:40px 20px;color:var(--parchment-dim);
@@ -131,11 +131,11 @@
         <col style="width:150px">
         <col style="width:170px">
         <col style="width:85px">
-        <col style="width:230px">
+        <col style="width:170px">
         <col style="width:75px">
         <col style="width:150px">
         <col style="width:290px">
-        <col style="width:160px">
+        <col style="width:90px">
       </colgroup>
       <thead>
         <tr>
@@ -191,8 +191,8 @@ function linhaHTML(t){
       <td>${t.plantacao || '&mdash;'}</td>
       <td class="obs">${obsHtml}</td>
       <td class="acoes">
-        <a href="${linkGoogle(t.lat, t.lng)}" target="_blank" rel="noopener">${iconePin}Google</a>
-        <a href="${linkApple(t.lat, t.lng)}" target="_blank" rel="noopener" class="apple">${iconeCompasso}Apple</a>
+        <a href="${linkGoogle(t.lat, t.lng)}" target="_blank" rel="noopener" aria-label="Abrir no Google Maps" title="Google Maps">${iconePin}</a>
+        <a href="${linkApple(t.lat, t.lng)}" target="_blank" rel="noopener" class="apple" aria-label="Abrir no Apple Maps" title="Apple Maps">${iconeCompasso}</a>
       </td>
     </tr>
   `;
