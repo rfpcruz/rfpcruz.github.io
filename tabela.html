@@ -65,22 +65,22 @@
   }
 
   .tabela-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;}
-  table{width:100%;border-collapse:separate;border-spacing:0;font-size:0.85rem;min-width:900px;}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:0.85rem;min-width:960px;table-layout:fixed;}
   thead th{
     text-align:left;font-family:'JetBrains Mono',monospace;font-size:0.68rem;
     letter-spacing:0.08em;text-transform:uppercase;color:var(--olive);
     background:var(--pine-panel);padding:12px 14px;
     box-shadow:inset 0 -1px 0 var(--line);
-    white-space:nowrap;position:sticky;top:60px;z-index:1;
   }
   tbody td{
     padding:12px 14px;box-shadow:inset 0 -1px 0 var(--line);vertical-align:top;
+    overflow-wrap:break-word;
   }
   tbody tr:hover{background:var(--pine-panel-hover);}
   tbody tr:last-child td{box-shadow:none;}
-  td.nome{font-weight:600;white-space:nowrap;}
+  td.nome{font-weight:600;}
   td.descricao{color:var(--parchment-dim);}
-  td.coords{font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--parchment-dim);white-space:nowrap;}
+  td.artigo{white-space:nowrap;}
   td.obs ul{margin:0;padding-left:16px;}
   td.obs li{margin-bottom:3px;color:var(--parchment-dim);font-size:0.8rem;}
   td.obs li:last-child{margin-bottom:0;}
@@ -127,6 +127,16 @@
 
   <div class="tabela-scroll">
     <table>
+      <colgroup>
+        <col style="width:150px">
+        <col style="width:170px">
+        <col style="width:85px">
+        <col style="width:230px">
+        <col style="width:75px">
+        <col style="width:150px">
+        <col style="width:290px">
+        <col style="width:160px">
+      </colgroup>
       <thead>
         <tr>
           <th>Nome</th>
@@ -135,7 +145,6 @@
           <th>Freguesia</th>
           <th>Área</th>
           <th>Plantação</th>
-          <th>Coordenadas</th>
           <th>Observações</th>
           <th>Navegação</th>
         </tr>
@@ -176,11 +185,10 @@ function linhaHTML(t){
     <tr data-busca="${normalizar([t.nome_predio, t.descricao, t.artigo_matricial, t.freguesia, t.plantacao, (t.observacoes||[]).join(' ')].join(' '))}">
       <td class="nome">${t.nome_predio}</td>
       <td class="descricao">${t.descricao || '&mdash;'}</td>
-      <td>${t.artigo_matricial}</td>
+      <td class="artigo">${t.artigo_matricial}</td>
       <td>${t.freguesia}</td>
       <td>${formatArea(t.area)}</td>
       <td>${t.plantacao || '&mdash;'}</td>
-      <td class="coords">${t.lat.toFixed(6)}, ${t.lng.toFixed(6)}</td>
       <td class="obs">${obsHtml}</td>
       <td class="acoes">
         <a href="${linkGoogle(t.lat, t.lng)}" target="_blank" rel="noopener">${iconePin}Google</a>
