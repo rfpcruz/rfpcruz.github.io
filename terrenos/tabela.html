@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Tabela de Prédios — Os Meus Prédios Rústicos</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --pine:#16221C;
+    --pine-panel:#1F2E26;
+    --pine-panel-hover:#26362C;
+    --olive:#7FA65C;
+    --gold:#C9A84C;
+    --parchment:#EDE7D9;
+    --parchment-dim:#B9C0B4;
+    --line:#33443A;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;min-height:100%;background:var(--pine);font-family:'Inter',sans-serif;color:var(--parchment);}
+
+  #topbar{
+    position:sticky;top:0;left:0;right:0;height:60px;z-index:100;
+    display:flex;align-items:center;gap:14px;padding:0 16px;
+    background:var(--pine-panel);border-bottom:1px solid var(--line);
+  }
+  #voltarBtn{
+    display:inline-flex;align-items:center;gap:7px;flex-shrink:0;
+    font-family:'Inter',sans-serif;font-size:0.8rem;font-weight:600;text-decoration:none;
+    color:var(--parchment);background:transparent;border:1px solid var(--line);
+    border-radius:6px;padding:8px 12px;transition:background .15s ease;
+  }
+  #voltarBtn:hover{background:var(--pine-panel-hover);}
+  #voltarBtn svg{width:16px;height:16px;}
+
+  #topbar-title{min-width:0;}
+  #topbar-title .eyebrow{
+    font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;
+    text-transform:uppercase;color:var(--olive);margin:0;line-height:1.3;
+  }
+  #topbar-title h1{
+    font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem;margin:0;
+    letter-spacing:0.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+
+  main{max-width:1200px;margin:0 auto;padding:24px 16px 60px;}
+
+  #buscaWrap{position:relative;margin-bottom:20px;}
+  #busca{
+    width:100%;padding:12px 14px 12px 42px;border-radius:8px;
+    border:1px solid var(--line);background:var(--pine-panel);color:var(--parchment);
+    font-family:'Inter',sans-serif;font-size:0.9rem;
+  }
+  #busca:focus{outline:2px solid var(--gold);outline-offset:1px;}
+  #buscaWrap svg{
+    position:absolute;left:14px;top:50%;transform:translateY(-50%);
+    width:17px;height:17px;color:var(--parchment-dim);pointer-events:none;
+  }
+  #contagemResultados{
+    font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--olive);
+    margin:-10px 0 16px 4px;
+  }
+
+  .tabela-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:0.83rem;table-layout:fixed;}
+  thead th{
+    text-align:left;font-family:'JetBrains Mono',monospace;font-size:0.66rem;
+    letter-spacing:0.06em;text-transform:uppercase;color:var(--olive);
+    background:var(--pine-panel);padding:12px 10px;
+    box-shadow:inset 0 -1px 0 var(--line);
+  }
+  tbody td{
+    padding:12px 10px;box-shadow:inset 0 -1px 0 var(--line);vertical-align:top;
+    overflow-wrap:break-word;
+  }
+  tbody tr:hover{background:var(--pine-panel-hover);}
+  tbody tr:last-child td{box-shadow:none;}
+  td.nome{font-weight:600;}
+  td.nome a{color:var(--parchment);text-decoration:none;border-bottom:1px dashed var(--olive);}
+  td.nome a:hover{color:var(--gold);border-bottom-color:var(--gold);}
+  td.descricao{color:var(--parchment-dim);}
+  td.artigo{white-space:nowrap;}
+  td.obs ul{margin:0;padding-left:16px;}
+  td.obs li{margin-bottom:3px;color:var(--parchment-dim);font-size:0.8rem;}
+  td.obs li:last-child{margin-bottom:0;}
+  td.acoes{white-space:nowrap;padding-left:8px;padding-right:8px;}
+  td.acoes a{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:4px;margin-right:4px;
+    color:var(--pine);background:var(--gold);
+  }
+  td.acoes a.apple{background:transparent;color:var(--parchment);border:1px solid var(--line);margin-right:0;}
+  td.acoes a svg{width:13px;height:13px;}
+
+  #semResultados{
+    display:none;text-align:center;padding:40px 20px;color:var(--parchment-dim);
+    font-family:'JetBrains Mono',monospace;font-size:0.85rem;
+  }
+
+  @media (max-width:520px){
+    #topbar-title .eyebrow{display:none;}
+    #voltarBtn span{display:none;}
+    #voltarBtn{padding:8px;}
+  }
+</style>
+</head>
+<body>
+
+<header id="topbar">
+  <a id="voltarBtn" href="index.html" aria-label="Voltar ao mapa">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+    <span>Voltar ao mapa</span>
+  </a>
+  <div id="topbar-title">
+    <p class="eyebrow">Cadastro de Prédios Rústicos</p>
+    <h1>Tabela Resumo</h1>
+  </div>
+</header>
+
+<main>
+  <div id="buscaWrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="busca" placeholder="Pesquisar por nome, freguesia, artigo, plantação, observações…" autocomplete="off">
+  </div>
+
+  <div class="tabela-scroll">
+    <table>
+      <colgroup>
+        <col style="width:135px">
+        <col style="width:145px">
+        <col style="width:78px">
+        <col style="width:150px">
+        <col style="width:62px">
+        <col style="width:125px">
+        <col style="width:225px">
+        <col style="width:70px">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Descrição</th>
+          <th>Artigo</th>
+          <th>Freguesia</th>
+          <th>Área</th>
+          <th>Plantação</th>
+          <th>Observações</th>
+          <th>Navegação</th>
+        </tr>
+      </thead>
+      <tbody id="corpoTabela"></tbody>
+    </table>
+  </div>
+  <p id="semResultados">Nenhum prédio encontrado para essa pesquisa.</p>
+</main>
+
+<script>
+const iconePin = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>`;
+const iconeCompasso = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.5 13 13l-3.5 1.5L11 11z"/></svg>`;
+
+function linkGoogle(lat, lng){ return `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`; }
+function linkApple(lat, lng){ return `https://maps.apple.com/?daddr=${lat},${lng}`; }
+
+function formatArea(areaStr){
+  const ha = parseFloat(areaStr);
+  if (isNaN(ha)) return '';
+  if (ha < 0.05) return `${Math.round(ha * 10000)} m²`;
+  const s = ha.toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
+  return `${s} ha`;
+}
+
+// remove acentos para a pesquisa ser insensível a acentuação
+function normalizar(txt){
+  return (txt || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+let terrenos = [];
+
+function linhaHTML(t){
+  const obsHtml = (t.observacoes && t.observacoes.length)
+    ? `<ul>${t.observacoes.map(o => `<li>${o}</li>`).join('')}</ul>`
+    : '&mdash;';
+  return `
+    <tr data-busca="${normalizar([t.nome_predio, t.descricao, t.artigo_matricial, t.freguesia, t.plantacao, (t.observacoes||[]).join(' ')].join(' '))}">
+      <td class="nome"><a href="index.html?terreno=${t.id}">${t.nome_predio}</a></td>
+      <td class="descricao">${t.descricao || '&mdash;'}</td>
+      <td class="artigo">${t.artigo_matricial}</td>
+      <td>${t.freguesia}</td>
+      <td>${formatArea(t.area)}</td>
+      <td>${t.plantacao || '&mdash;'}</td>
+      <td class="obs">${obsHtml}</td>
+      <td class="acoes">
+        <a href="${linkGoogle(t.lat, t.lng)}" target="_blank" rel="noopener" aria-label="Abrir no Google Maps" title="Google Maps">${iconePin}</a>
+        <a href="${linkApple(t.lat, t.lng)}" target="_blank" rel="noopener" class="apple" aria-label="Abrir no Apple Maps" title="Apple Maps">${iconeCompasso}</a>
+      </td>
+    </tr>
+  `;
+}
+
+async function iniciar(){
+  const resp = await fetch('terrenos.json');
+  terrenos = await resp.json();
+
+  const corpo = document.getElementById('corpoTabela');
+  corpo.innerHTML = terrenos.map(linhaHTML).join('');
+
+  const buscaEl = document.getElementById('busca');
+  buscaEl.addEventListener('input', () => {
+    const termo = normalizar(buscaEl.value.trim());
+    const linhas = corpo.querySelectorAll('tr');
+    let visiveis = 0;
+    linhas.forEach(tr => {
+      const corresponde = tr.dataset.busca.includes(termo);
+      tr.style.display = corresponde ? '' : 'none';
+      if (corresponde) visiveis++;
+    });
+    document.getElementById('semResultados').style.display = visiveis === 0 ? 'block' : 'none';
+  });
+}
+
+iniciar();
+</script>
+</body>
+</html>
