@@ -189,6 +189,12 @@ main { padding-top: 8px; }
 
 .now-value { color: var(--text); }
 
+.now-value + .now-value {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
+
 .article-list { display: flex; flex-direction: column; gap: 4px; }
 
 .exp-list {
