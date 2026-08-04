@@ -127,6 +127,15 @@
     margin: 0 0 24px;
   }
 
+  .post-body img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin: 0 0 24px;
+  }
+
   table {
     width: 100%;
     border-collapse: collapse;
@@ -156,9 +165,9 @@
   <a href="../index.html#articles" class="back-link">&larr; back to articles</a>
 
   <header class="post-header">
-    <p class="post-meta">24 Apr 2024 · ~8 min read</p>
+    <p class="post-meta">04 Aug 2026 · ~8 min read</p>
     <h1>JWT: Secure and Scalable Authentication</h1>
-    <p class="post-meta">by Ricardo Cruz</p>
+    <p class="post-meta">by Your Name</p>
     <span class="post-tag">OutSystems</span>
   </header>
 
@@ -267,7 +276,7 @@ Output:  Token (Text)
 2. Token = JWT.CreateSignedSymmetricToken(Claims, SigningSecret)
 3. Return Token</code></pre>
 
-    <img src="images/jwt-outsystems-token-example.png" alt="Decoded JWT example showing header and payload">
+    <div class="img-placeholder">[ screenshot placeholder — example of the encoded token in a browser dev tools / API response ]</div>
 
     <h3>Validating a token</h3>
     <p>An action (often wired into an API's authentication flow) reads and validates the token on each protected request:</p>
