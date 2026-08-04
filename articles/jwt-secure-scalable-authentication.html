@@ -38,6 +38,18 @@
     color: var(--dim);
     margin-top: 14px;
   }
+  .post-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 3px 8px;
+    margin-top: 16px;
+  }
 
   .post-body { padding: 40px 0 80px; }
   .post-body h2 {
@@ -147,11 +159,12 @@
     <p class="post-meta">04 Aug 2026 · ~8 min read</p>
     <h1>JWT: Secure and Scalable Authentication</h1>
     <p class="post-meta">by Your Name</p>
+    <span class="post-tag">OutSystems</span>
   </header>
 
   <main class="post-body">
 
-    <p class="lede">HTTP is stateless by design — every request stands alone, with no memory of what came before. So how does a web app know it's still you on the next click? This is the problem authentication tokens solve, and it's why JSON Web Tokens (JWTs) have become the default choice for modern APIs and microservices.</p>
+    <p class="lede">HTTP is stateless by design — every request stands alone, with no memory of what came before. So how does a web app know it's still you on the next click? This is the problem authentication tokens solve, and it's why JSON Web Tokens (JWTs) have become the default choice for modern APIs and microservices. The concepts below apply to any stack, and the practical examples are shown in OutSystems.</p>
 
     <h2>Authorization &amp; the stateless web</h2>
     <p>A static site just serves pages: request a URL, get a page back, no identity involved. The moment an app needs to know <em>who</em> is asking — to show a dashboard, restrict an action, or fetch account data — the server needs a way to recognize the same user across multiple requests. Since HTTP itself keeps no memory between them, that identity has to travel with each request somehow.</p>
