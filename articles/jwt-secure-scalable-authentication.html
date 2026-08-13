@@ -223,6 +223,8 @@
 
     <div class="callout">JWTs are <strong>encoded, not encrypted</strong>. Anyone can decode the header and payload and read the claims — the signature only guarantees they weren't modified. Never put secrets or sensitive data directly in the payload.</div>
 
+    <img src="images/jwt-outsystems-token-example.png" alt="Decoded JWT example showing header and payload">
+
     <h3>How verification works</h3>
     <p>To validate an incoming token, the server recomputes the signature from the header and payload using its own copy of the secret (or public key), and compares it against the signature in the token. If they match, the claims are trustworthy; if not, the token was tampered with or signed by someone else.</p>
 
@@ -275,8 +277,6 @@ Output:  Token (Text)
    }
 2. Token = JWTCore.SignTokenWithJWK(Claims, SigningKey)
 3. Return Token</code></pre>
-
-    <img src="images/jwt-outsystems-token-example.png" alt="Decoded JWT example showing header and payload">
 
     <h3>Validating a token</h3>
     <p>An action (often wired into an API's authentication flow) reads and validates the token on each protected request:</p>
