@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ETags in Action: Definition, Benefits, and Application — Ricardo Cruz</title>
+<meta name="description" content="What e-Tags are, how they power browser caching, and how to use them for optimistic concurrency control — with practical curl examples and an OutSystems implementation.">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .article-page { max-width: 720px; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-decoration: none;
+    margin-top: 40px;
+  }
+  .back-link:hover { color: var(--accent); }
+
+  .post-header { padding: 24px 0 32px; border-bottom: 1px solid var(--line); }
+  .post-header h1 {
+    font-family: var(--mono);
+    font-size: 1.7rem;
+    line-height: 1.3;
+    margin: 12px 0 0;
+  }
+  .post-meta {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin-top: 14px;
+  }
+  .post-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 3px 8px;
+    margin-top: 16px;
+    margin-right: 6px;
+  }
+
+  .post-body { padding: 40px 0 80px; }
+  .post-body h2 {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    margin: 48px 0 16px;
+    color: var(--text);
+  }
+  .post-body h2:first-child { margin-top: 0; }
+  .post-body h3 {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    color: var(--accent);
+    margin: 28px 0 10px;
+  }
+  .post-body p { margin: 0 0 16px; }
+  .post-body ul, .post-body ol { margin: 0 0 16px; padding-left: 22px; }
+  .post-body li { margin-bottom: 8px; }
+  .post-body strong { color: var(--text); }
+
+  .lede { font-size: 1.05rem; color: var(--muted); }
+
+  pre {
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 0 0 20px;
+  }
+  code { font-family: var(--mono); font-size: 0.85rem; }
+  :not(pre) > code {
+    background: var(--bg-alt);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--line);
+  }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    padding: 4px 0 4px 16px;
+    color: var(--muted);
+    margin: 0 0 20px;
+  }
+
+  .img-placeholder {
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    padding: 48px 20px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin: 0 0 24px;
+  }
+
+  .post-body img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin: 0 0 24px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 20px;
+    font-size: 0.92rem;
+  }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  th {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="stripe" aria-hidden="true"></div>
+
+<div class="wrap article-page">
+
+  <a href="../index.html#articles" class="back-link">&larr; back to articles</a>
+
+  <header class="post-header">
+    <p class="post-meta">15 January 2025 · ~7 min read</p>
+    <h1>ETags in Action: Definition, Benefits, and Application</h1>
+    <p class="post-meta">by Ricardo Cruz</p>
+    <span class="post-tag">OutSystems</span>
+    <span class="post-tag">HTTP</span>
+    <span class="post-tag">Caching</span>
+  </header>
+
+  <main class="post-body">
+
+    <p class="lede">Every time a browser re-fetches a page it hasn't seen change, or two people edit the same record at once, there's a version-tracking problem underneath. e-Tags (Entity Tags) are the small HTTP header that solves both — one string that lets a server say "this is exactly which version of the resource you're looking at."</p>
+
+    <h2>What are e-Tags?</h2>
+    <p>An e-Tag is a unique identifier tied to a specific version of a web resource. Its job is simple: let a client ask the server "has this changed since I last saw it?" without sending or receiving the full resource again.</p>
+    <p>Structurally it's just a quoted string — often a hash of the content — such as <code>"686897696a7c876b7e"</code>. Browsers and servers use it for two related things: optimizing caching, and managing concurrent updates.</p>
+
+    <h3>Why e-Tags matter</h3>
+    <ul>
+      <li><strong>Performance</strong> — only changed resources get re-fetched, cutting bandwidth and server load.</li>
+      <li><strong>Smoother UX</strong> — faster loads mean more responsive interactions.</li>
+      <li><strong>Concurrency control</strong> — e-Tags help prevent one update from silently overwriting another.</li>
+      <li><strong>Lower data costs</strong> — fewer redundant downloads matter most on mobile or bandwidth-limited connections.</li>
+    </ul>
+
+    <h2>How e-Tags work in webpage caching</h2>
+    <p>Browsers cache resources locally to avoid re-fetching them on every visit; servers cache responses to avoid regenerating them on every request. e-Tags are the version stamp that ties the two together — they let both sides agree on whether a cached copy is still valid.</p>
+
+    <h3>The request/response cycle</h3>
+    <ol>
+      <li><strong>Initial request</strong> — the server responds with the content and an <code>ETag</code> header.</li>
+      <li><strong>Subsequent requests</strong> — the browser sends that e-Tag back in an <code>If-None-Match</code> header, asking "is this still current?"</li>
+      <li><strong>Server validation</strong> — if the content is unchanged, the server replies <code>304 Not Modified</code> with no body, saving bandwidth. If it changed, it sends the updated content with a new e-Tag.</li>
+    </ol>
+
+    <h3>Strong vs weak e-Tags</h3>
+    <table>
+      <thead><tr><th>Type</th><th>Meaning</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td>Strong</td><td>Byte-for-byte match required; use when any change matters</td><td><code>ETag: "686897696a7c876b7e"</code></td></tr>
+        <tr><td>Weak</td><td>"Close enough" match — minor/metadata changes don't invalidate it</td><td><code>ETag: W/"686897696a7c876b7e"</code></td></tr>
+      </tbody>
+    </table>
+
+    <h3>Seeing it in practice</h3>
+    <p>A plain request against a public endpoint shows the server issuing an e-Tag:</p>
+    <pre><code>$ curl -I https://jsonplaceholder.typicode.com/posts/1
+HTTP/2 200
+content-type: application/json; charset=utf-8
+cache-control: max-age=43200
+etag: W/"124-yiKdLzqO5gfBrJFrcdJ8Yq0LGnU"</code></pre>
+
+    <p>Sending that e-Tag back in <code>If-None-Match</code> lets the server confirm nothing changed, returning <code>304</code> with no body:</p>
+    <pre><code>$ curl -I -H 'If-None-Match: W/"124-yiKdLzqO5gfBrJFrcdJ8Yq0LGnU"' \
+  https://jsonplaceholder.typicode.com/posts/1
+HTTP/2 304
+etag: W/"124-yiKdLzqO5gfBrJFrcdJ8Yq0LGnU"</code></pre>
+
+    <p>Send a <em>different</em> (stale) e-Tag, and the server treats it as a mismatch — it returns <code>200</code> with the full body and the current e-Tag again, exactly as if no e-Tag had been sent at all.</p>
+
+    <h2>Using e-Tags for optimistic concurrency control</h2>
+    <p>Caching is only half the story. The same version-stamping idea also solves a very different problem: two clients editing the same resource at once.</p>
+
+    <h3>The problem</h3>
+    <p>Picture a collaborative app or an inventory system where two clients read the same record, each make an edit, and both write back. Without any version check, whichever write lands last simply overwrites the other — silently.</p>
+
+    <img src="images/etag-concurrency-without.svg" alt="Diagram: two clients writing through an HTTP API with no e-Tag check, so the second write overwrites the first">
+
+    <h3>The fix: If-Match</h3>
+    <p>e-Tags give clients a way to say "only apply my update if the resource is still at the version I read." The client sends the e-Tag it read back in an <code>If-Match</code> header on the write request. The server compares it against the resource's current e-Tag:</p>
+    <ul>
+      <li>If they match, the write goes through and the server issues a new e-Tag for the new version.</li>
+      <li>If they don't match, the resource changed underneath the client — the server rejects the write with <code>412 Precondition Failed</code> instead of silently overwriting.</li>
+    </ul>
+
+    <img src="images/etag-concurrency-with.svg" alt="Diagram: two clients writing with If-Match headers, the first write succeeds and the second is rejected with 412 Precondition Failed">
+
+    <p>This pattern is called <strong>optimistic concurrency control</strong> — optimistic because it doesn't lock the resource up front; it just checks at write time and rejects the loser of the race, leaving that client to re-fetch and retry.</p>
+
+    <h3>Implementing it in OutSystems</h3>
+    <p>The pattern maps cleanly onto a typical OutSystems REST API: a <code>PUT</code> action reads the <code>If-Match</code> header, compares it against the stored e-Tag on the record, and only proceeds if they match.</p>
+    <pre><code>ServerAction: UpdateRecord_PUT
+Inputs:  RecordId (Text), IfMatchHeader (Text), NewValues (Record)
+Outputs: HttpStatus (Integer), UpdatedRecord (Record)
+
+1. Record = GetRecordById(RecordId)
+2. If Record is null:
+     Return HttpStatus = 404
+3. If IfMatchHeader is empty:
+     Return HttpStatus = 428  ' Precondition Required
+4. If IfMatchHeader &lt;&gt; Record.ETag:
+     Return HttpStatus = 412  ' Precondition Failed
+5. Record.Values = NewValues
+   Record.ETag = GenerateGuid()
+6. SaveRecord(Record)
+7. Return HttpStatus = 200, UpdatedRecord = Record</code></pre>
+
+    <div class="img-placeholder">[ screenshot placeholder — the same flow shown in Service Studio: reading the If-Match header, branching on 428/412/404, and updating the record's ETag field before saving ]</div>
+
+    <p>The key details: the e-Tag lives as a field on the record itself, it gets regenerated on every successful write, and the comparison happens <em>before</em> any business logic runs — so a stale write never reaches the database.</p>
+
+    <h2>Benefits of e-Tags</h2>
+    <ul>
+      <li><strong>Improves caching efficiency</strong> — only modified resources are reloaded.</li>
+      <li><strong>Optimizes server resources</strong> — avoids redundant data transfers and reprocessing.</li>
+      <li><strong>Supports concurrency control</strong> — prevents silent overwrites in multi-user environments.</li>
+      <li><strong>Data consistency</strong> — cached data stays accurate and up to date.</li>
+    </ul>
+
+    <h2>Limitations of e-Tags</h2>
+    <ul>
+      <li><strong>Server overhead</strong> — generating and validating e-Tags adds load, especially for dynamic content.</li>
+      <li><strong>Scalability</strong> — managing e-Tags efficiently across many resources gets harder at high traffic.</li>
+      <li><strong>Inconsistent weak e-Tag support</strong> — some browsers and caches don't fully honor weak e-Tags.</li>
+      <li><strong>Implementation complexity</strong> — both server and client need extra logic to generate, send, and check them correctly.</li>
+    </ul>
+
+    <h2>Closing thoughts</h2>
+    <p>e-Tags solve two problems with one mechanism: they tell a cache when it can skip a re-fetch, and they tell a write when it's about to clobber someone else's change. Both come down to the same question — "is this still the version I think it is?" Once that clicks, deciding where to add e-Tags to your own APIs becomes a lot more obvious: any resource that's read often, or written by more than one client, is a candidate.</p>
+
+    <p class="post-meta" style="margin-top:32px;">This article is adapted from a talk originally given at Noesis on 15 November 2024.</p>
+
+  </main>
+
+  <footer class="site-footer">
+    <span>© 2025 Ricardo Cruz</span>
+    <a href="../index.html#articles" class="back-link" style="margin-top:0;">&larr; more articles</a>
+  </footer>
+
+</div>
+
+</body>
+</html>
