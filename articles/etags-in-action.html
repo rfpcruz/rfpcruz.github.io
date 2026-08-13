@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ETags in Action: Definition, Benefits, and Application — Ricardo Cruz</title>
 <meta name="description" content="What e-Tags are, how they power browser caching, and how to use them for optimistic concurrency control — with practical curl examples and an OutSystems implementation.">
+<meta property="article:published_time" content="2025-01-15">
+<meta property="article:author" content="Ricardo Cruz">
+<meta property="og:title" content="ETags in Action: Definition, Benefits, and Application">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://rfpcruz.github.io/articles/etags-in-action.html">
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -206,7 +211,18 @@ etag: W/"124-yiKdLzqO5gfBrJFrcdJ8Yq0LGnU"</code></pre>
     <h3>The problem</h3>
     <p>Picture a collaborative app or an inventory system where two clients read the same record, each make an edit, and both write back. Without any version check, whichever write lands last simply overwrites the other — silently.</p>
 
-    <img src="images/etag-concurrency-without.svg" alt="Diagram: two clients writing through an HTTP API with no e-Tag check, so the second write overwrites the first">
+    <pre><code>Client 1 ──┐
+           │  PUT /record/123
+           ▼
+      ┌───────────┐
+      │  HTTP API │────────▶  DB
+      └───────────┘
+           ▲
+           │  PUT /record/123
+Client 2 ──┘
+
+No version check ⇒ whichever request lands
+last silently overwrites the other's write.</code></pre>
 
     <h3>The fix: If-Match</h3>
     <p>e-Tags give clients a way to say "only apply my update if the resource is still at the version I read." The client sends the e-Tag it read back in an <code>If-Match</code> header on the write request. The server compares it against the resource's current e-Tag:</p>
@@ -215,7 +231,19 @@ etag: W/"124-yiKdLzqO5gfBrJFrcdJ8Yq0LGnU"</code></pre>
       <li>If they don't match, the resource changed underneath the client — the server rejects the write with <code>412 Precondition Failed</code> instead of silently overwriting.</li>
     </ul>
 
-    <img src="images/etag-concurrency-with.svg" alt="Diagram: two clients writing with If-Match headers, the first write succeeds and the second is rejected with 412 Precondition Failed">
+    <pre><code>Client 1 ──┐  If-Match: "v1"
+           ▼
+      ┌───────────┐
+      │  HTTP API │
+      └───────────┘
+          │      │
+     match│      │mismatch
+          ▼      ▼
+     200 OK   412 Precondition Failed
+   ETag "v2"  (resource is already "v2")
+           ▲
+           │  If-Match: "v1"
+Client 2 ──┘</code></pre>
 
     <p>This pattern is called <strong>optimistic concurrency control</strong> — optimistic because it doesn't lock the resource up front; it just checks at write time and rejects the loser of the race, leaving that client to re-fetch and retry.</p>
 
@@ -237,7 +265,9 @@ Outputs: HttpStatus (Integer), UpdatedRecord (Record)
 6. SaveRecord(Record)
 7. Return HttpStatus = 200, UpdatedRecord = Record</code></pre>
 
-    <div class="img-placeholder">[ screenshot placeholder — the same flow shown in Service Studio: reading the If-Match header, branching on 428/412/404, and updating the record's ETag field before saving ]</div>
+    <img src="images/etag-outsystems-entity-and-assignment.png" alt="Record entity with an ETag field, and an assignment setting it to a new value on every successful update">
+
+    <img src="images/etag-outsystems-put-flow.png" alt="PUT flow in Service Studio branching on missing record (404), missing If-Match (428), and mismatched If-Match (412)">
 
     <p>The key details: the e-Tag lives as a field on the record itself, it gets regenerated on every successful write, and the comparison happens <em>before</em> any business logic runs — so a stale write never reaches the database.</p>
 
