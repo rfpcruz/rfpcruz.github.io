@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JWT: Secure and Scalable Authentication — Ricardo Cruz</title>
-<meta name="description" content="A practical walkthrough of session tokens vs JSON Web Tokens, how JWTs are structured and verified, security trade-offs, and how to use them safely in OutSystems.">
+<title>JWT: Secure and Scalable Authentication — Your Name</title>
+<meta name="description" content="A practical walkthrough of session tokens vs JSON Web Tokens, how JWTs are structured and verified, and how to use them safely in OutSystems.">
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -116,6 +116,26 @@
     margin: 0 0 20px;
   }
 
+  .img-placeholder {
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    padding: 48px 20px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin: 0 0 24px;
+  }
+
+  .post-body img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin: 0 0 24px;
+  }
+
   table {
     width: 100%;
     border-collapse: collapse;
@@ -145,146 +165,143 @@
   <a href="../index.html#articles" class="back-link">&larr; back to articles</a>
 
   <header class="post-header">
-    <p class="post-meta">04 Apr 2024 · ~8 min read</p>
+    <p class="post-meta">04 Aug 2026 · ~8 min read</p>
     <h1>JWT: Secure and Scalable Authentication</h1>
-    <p class="post-meta">by Ricardo Cruz</p>
+    <p class="post-meta">by Your Name</p>
     <span class="post-tag">OutSystems</span>
   </header>
 
   <main class="post-body">
 
-    <p class="lede">HTTP is stateless by design — every request stands alone, with no memory of what came before[cite: 1, 2]. So how does a web app know it's still you on the next click? This is the problem authentication tokens solve, and it's why JSON Web Tokens (JWTs) have become the default choice for modern APIs and microservices[cite: 1, 2]. The concepts below apply to any stack, and the practical examples are shown in OutSystems[cite: 1, 2].</p>
+    <p class="lede">HTTP is stateless by design — every request stands alone, with no memory of what came before. So how does a web app know it's still you on the next click? This is the problem authentication tokens solve, and it's why JSON Web Tokens (JWTs) have become the default choice for modern APIs and microservices. The concepts below apply to any stack, and the practical examples are shown in OutSystems.</p>
 
     <h2>Authorization &amp; the stateless web</h2>
-    <p>A static web site just serves pages: request a URL, get a page back, no identity involved[cite: 1, 2]. The moment an app needs to know <em>who</em> is asking — to show a personalized dashboard, restrict administrative actions, or fetch sensitive account details — the server needs a way to recognize the same user across multiple requests[cite: 1, 2].</p>
-    <p>Authorization ensures that a user is permitted to access the resource or operation they are requesting[cite: 2]. Since the HTTP protocol keeps no memory between requests, that identity payload must travel alongside each request[cite: 1, 2].</p>
+    <p>A static site just serves pages: request a URL, get a page back, no identity involved. The moment an app needs to know <em>who</em> is asking — to show a dashboard, restrict an action, or fetch account data — the server needs a way to recognize the same user across multiple requests. Since HTTP itself keeps no memory between them, that identity has to travel with each request somehow.</p>
+    <p>There are two common ways to carry that identity: <strong>session tokens</strong> and <strong>JSON Web Tokens</strong>.</p>
 
     <h2>Session tokens vs JWTs</h2>
-    <p>Historically, web applications relied on <strong>session tokens</strong>[cite: 1, 2]. On login, the server generates a random string, creates an active session entry in a server-side store (memory or database), and sends back a <code>session_id</code> cookie[cite: 1, 2]. For subsequent requests, the server looks up the <code>session_id</code> in its log/database to identify the user[cite: 1, 2].</p>
-
-    <p>While straightforward, session tokens face scalability bottlenecks when scaling horizontally across multi-server environments[cite: 1, 2]:</p>
-    <ul>
-      <li><strong>Load Balancer complexity:</strong> The load balancer must use "sticky sessions" to pin a client to a specific application server[cite: 2].</li>
-      <li><strong>Centralized Session Store:</strong> Alternatively, servers share a centralized cache like Redis[cite: 2]. However, this shared cache becomes a single point of failure and adds latency to every single request lookup[cite: 2].</li>
-    </ul>
-
-    <p>A <strong>JSON Web Token (JWT)</strong> flips this model: instead of storing identity on the server and passing a reference ID, the token <strong>carries the user state itself</strong> inside a self-contained, cryptographically signed container[cite: 1, 2]. Any backend server possessing the signing secret or public key can instantly verify the token's integrity without consulting a central database[cite: 1, 2].</p>
+    <p>A session token is a small random ID. On login, the server creates a session record, stores it (in memory, a database, or a cache like Redis), and hands the client a <code>session_id</code>. Every subsequent request sends that ID back, and the server looks it up to retrieve who the user is.</p>
+    <p>It works well for a single server, but starts to strain once you scale horizontally. Behind a load balancer with multiple app servers, whichever server created the session needs to either share that session store with the others, or the load balancer needs to consistently route the same user to the same server — both add moving parts and a shared point of failure.</p>
+    <p>A JWT takes a different approach: instead of a pointer to server-side state, the token <strong>carries the state itself</strong>, cryptographically signed so it can't be tampered with. Any server that knows the signing secret (or public key) can verify and read it — no shared session store required.</p>
 
     <h2>Anatomy of a JWT</h2>
-    <p>A JWT is a string consisting of three Base64URL-encoded segments joined by dots[cite: 1, 2]:</p>
+    <p>A JWT is three Base64URL-encoded segments separated by dots:</p>
     <div class="token-demo">
       <span class="tok-header">HEADER</span>.<span class="tok-payload">PAYLOAD</span>.<span class="tok-sig">SIGNATURE</span>
     </div>
 
-    <h3>1. Header</h3>
-    <p>Specifies the metadata about the token, such as the hashing algorithm used (e.g., HS256 or RS256) and the token type[cite: 1, 2]:</p>
+    <h3>Header</h3>
+    <p>Identifies the token type and the signing algorithm:</p>
     <pre><code>{
   "alg": "HS256",
   "typ": "JWT"
 }</code></pre>
 
-    <h3>2. Payload</h3>
-    <p>Contains the <strong>claims</strong> — statements about the user and additional context[cite: 2]. Claims are divided into registered (standard), public, and custom claims[cite: 2]:</p>
+    <h3>Payload</h3>
+    <p>Holds the claims — the actual data about the user and the token itself:</p>
     <pre><code>{
-  "iss": "oauth-provider",
+  "iss": "my-app-auth",
   "sub": "1234567890",
-  "name": "John Doe",
-  "email": "john.doe@email.com",
+  "name": "Jane Doe",
+  "email": "jane.doe@example.com",
   "admin": true,
-  "iat": 1516239022,
-  "exp": 1516257022
+  "iat": 1735689600,
+  "exp": 1735693200
 }</code></pre>
-    <p>Key claim attributes include <code>iss</code> (issuer), <code>sub</code> (subject/user ID), <code>iat</code> (issued at timestamp), and <code>exp</code> (expiration timestamp)[cite: 2].</p>
 
-    <h3>3. Signature</h3>
-    <p>The signature is calculated by combining the Base64URL-encoded header, the Base64URL-encoded payload, and a secret key using the specified algorithm[cite: 2]:</p>
+    <h3>Signature</h3>
+    <p>The header and payload are hashed together with a secret (or private key), producing a signature that proves the token wasn't altered:</p>
     <pre><code>HMACSHA256(
   base64UrlEncode(header) + "." + base64UrlEncode(payload),
   secret
 )</code></pre>
-    <p>Resulting signature snippet[cite: 2]:</p>
+
+    <p>Put together, a real token looks like this:</p>
     <div class="token-demo">
-      <span class="tok-sig">KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30</span>
+      <span class="tok-header">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span>.<span class="tok-payload">eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkphbmUgRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTczNTY4OTYwMH0</span>.<span class="tok-sig">4f2a9c1e7b8d3f0a6e5c2b1d9f8a7e6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1</span>
     </div>
 
-    <h3>Signature Validation Workflow</h3>
-    <p>When a client presents a JWT in an <code>Authorization: Bearer &lt;token&gt;</code> header, the server validates it by taking the received header and payload, re-running the signing function <code>f(header, payload, secret)</code>, and comparing the newly calculated hash against the signature attached to the token[cite: 2]. If they match, the token is genuine and hasn't been modified[cite: 2].</p>
+    <div class="callout">JWTs are <strong>encoded, not encrypted</strong>. Anyone can decode the header and payload and read the claims — the signature only guarantees they weren't modified. Never put secrets or sensitive data directly in the payload.</div>
 
-    <div class="callout">
-      <strong>Crucial Distinction: Encoded vs. Encrypted</strong><br>
-      JWTs are <strong>encoded</strong> using Base64URL, not encrypted[cite: 2]! Anyone who intercepts the token can decode it in seconds using standard tools[cite: 2]. Never store sensitive credentials, passwords, or credit card numbers inside a JWT payload[cite: 2].
-    </div>
+    <h3>How verification works</h3>
+    <p>To validate an incoming token, the server recomputes the signature from the header and payload using its own copy of the secret (or public key), and compares it against the signature in the token. If they match, the claims are trustworthy; if not, the token was tampered with or signed by someone else.</p>
 
-    <h2>Advantages &amp; Disadvantages</h2>
+    <h2>Advantages</h2>
+    <ul>
+      <li><strong>Stateless</strong> — no server-side session storage needed.</li>
+      <li><strong>Cross-domain &amp; cross-platform</strong> — works the same across APIs, mobile apps and SPAs.</li>
+      <li><strong>Role &amp; permission data travels with the token</strong>, enabling access control without extra lookups.</li>
+      <li><strong>Scales horizontally</strong> — any server that holds the key can verify a token.</li>
+      <li><strong>Built-in expiration</strong>, via the <code>exp</code> claim.</li>
+      <li>The de facto standard for securing APIs and microservices.</li>
+    </ul>
 
+    <h2>Disadvantages — and how to mitigate them</h2>
     <table>
       <thead>
-        <tr>
-          <th>Advantages</th>
-          <th>Disadvantages &amp; Mitigations</th>
-        </tr>
+        <tr><th>Risk</th><th>Mitigation</th></tr>
       </thead>
       <tbody>
-        <tr>
-          <td><strong>Stateless Authentication:</strong> Eliminates server-side session lookup overhead[cite: 2].</td>
-          <td><strong>Hard to Revoke:</strong> Once issued, a JWT is valid until it expires[cite: 2]. <br><em>Mitigation: Use short-lived access tokens + refresh tokens[cite: 2].</em></td>
-        </tr>
-        <tr>
-          <td><strong>High Scalability:</strong> Ideal for microservices, mobile apps, and multi-region APIs[cite: 2].</td>
-          <td><strong>Security Risks (XSS &amp; Theft):</strong> Malicious scripts can steal tokens from local storage[cite: 2].<br><em>Mitigation: Store in HttpOnly cookies and enforce CSP rules[cite: 2].</em></td>
-        </tr>
-        <tr>
-          <td><strong>Cross-Domain / Cross-Platform:</strong> Works seamlessly across decoupled client applications[cite: 2].</td>
-          <td><strong>Replay Attacks:</strong> Intercepted tokens can be replayed[cite: 2].<br><em>Mitigation: Force HTTPS, rotate tokens, and bind tokens to clients[cite: 2].</em></td>
-        </tr>
-        <tr>
-          <td><strong>Built-in RBAC:</strong> User roles and permissions reside directly within the payload claims[cite: 2].</td>
-          <td><strong>Token Size:</strong> Larger than opaque session IDs, increasing header overhead on every HTTP request[cite: 2].</td>
-        </tr>
+        <tr><td>Can't be revoked on demand — a valid token stays valid until it expires</td><td>Keep tokens short-lived; pair with a refresh-token flow</td></tr>
+        <tr><td>XSS / token theft if stored insecurely</td><td>Prefer HTTP-only cookies; enforce a Content Security Policy</td></tr>
+        <tr><td>Replay attacks — a stolen token can be reused</td><td>Rotate tokens, bind them to a device/session, and always use HTTPS</td></tr>
       </tbody>
     </table>
 
-    <h2>Best Practices</h2>
+    <h2>Best practices</h2>
     <ol>
-      <li><strong>Keep Tokens Short-Lived:</strong> Set expiration times (<code>exp</code>) to minutes or hours rather than days to minimize the risk window of leaked tokens[cite: 2].</li>
-      <li><strong>Secure Storage:</strong> Prefer <code>HttpOnly</code>, <code>Secure</code>, and <code>SameSite</code> cookies over browser local storage to mitigate Cross-Site Scripting (XSS) attacks[cite: 2].</li>
-      <li><strong>Always Enforce HTTPS:</strong> Transport Layer Security prevents token interception over open networks[cite: 2].</li>
-      <li><strong>Server-Side Claim Validation:</strong> Always verify claims (issuer, audience, expiration) on every API request, and periodically rotate signing keys[cite: 2].</li>
+      <li><strong>Short-lived tokens.</strong> The shorter the lifetime, the smaller the exposure window if one leaks.</li>
+      <li><strong>Secure client-side storage.</strong> Avoid <code>localStorage</code> for anything sensitive; HTTP-only cookies are safer against XSS.</li>
+      <li><strong>Always transmit over HTTPS.</strong> A JWT sent in the clear is trivially readable in transit.</li>
+      <li><strong>Validate every claim server-side</strong> — issuer, audience, expiration — and rotate signing keys periodically.</li>
     </ol>
 
-    <h2>OutSystems Implementation &amp; Usage</h2>
-    <p>Implementing JWT authentication in OutSystems applications typically involves handling OIDC tokens on the client side and enforcing server-side action validation[cite: 2].</p>
+    <h2>Using JWTs in OutSystems</h2>
+    <p>OutSystems doesn't make you build JWT handling from scratch — there's tooling to create, sign and validate tokens in a few different ways (symmetric secrets, asymmetric keys, JSON Web Keys). Below is a simplified setup built on top of that: one action to issue a token after login, and one to validate it on incoming requests.</p>
 
-    <h3>1. Client-Side Inspection</h3>
-    <p>In modern OutSystems Reactive or Mobile apps using OpenID Connect (OIDC) or custom SSO providers (e.g., Okta, Azure AD), tokens are received and maintained in client storage[cite: 2]. Inspecting DevTools reveals items like[cite: 2]:</p>
-    <ul>
-      <li><code>oidcAccessToken</code>: The bearer JWT used for API authorization[cite: 2].</li>
-      <li><code>oidcIdToken</code>: Encodes profile details about the authenticated user[cite: 2].</li>
-      <li><code>oidcRefreshToken</code>: Used to request a fresh access token without requiring manual re-authentication[cite: 2].</li>
-    </ul>
+    <div class="img-placeholder">[ screenshot placeholder — module structure: CreateToken / ReadToken server actions ]</div>
 
-    <h3>2. Server Logic &amp; Authorization Actions</h3>
-    <p>When exposed REST APIs or Server Actions receive requests, custom verification flows (such as a <code>JWT_GetInfo</code> or <code>JWT_ValidateUser</code> wrapper) evaluate the incoming request headers[cite: 2]:</p>
-    <ul>
-      <li>Validate token structure and cryptographic signature[cite: 2].</li>
-      <li>Extract user roles and identity claims (e.g., verifying if a user is an Admin, Logistics Provider, or Customer)[cite: 2].</li>
-      <li>If invalid or expired, abort execution immediately with an appropriate HTTP status code (<code>401 Unauthorized</code> or <code>500 Internal Error</code>)[cite: 2].</li>
-    </ul>
+    <h3>Issuing a token</h3>
+    <p>A server action builds the claims and signs the token, typically right after a successful login:</p>
+    <pre><code>ServerAction: SignTokenWithJWK
+Inputs:  UserId (Text), Roles (List of Text), ExpiresInMinutes (Integer)
+Output:  Token (Text)
 
-    <h3>3. The JWT_Core Forge Component</h3>
-    <p>In OutSystems, standard Forge components like <code>JWT_Core</code> provide clean, reusable actions for token operations[cite: 2]:</p>
-    <ul>
-      <li><strong>Create Token:</strong> <code>CreateSignedSymmetricToken</code>, <code>CreateSignedAsymmetricTokenWithPemKey</code>, or <code>CreateSignedAsymmetricTokenWithJsonWebKey</code>[cite: 2].</li>
-      <li><strong>Read &amp; Validate:</strong> <code>ReadAndValidateToken</code> (checks signature, expiration, and claims) and <code>ReadTokenWithoutValidation</code> (for inspecting public header/payload claims)[cite: 2].</li>
-    </ul>
+1. Claims = {
+     "sub": UserId,
+     "roles": Roles,
+     "iat": Now(),
+     "exp": AddMinutes(Now(), ExpiresInMinutes)
+   }
+2. Token = JWTCore.SignTokenWithJWK(Claims, SigningKey)
+3. Return Token</code></pre>
+
+    <img src="images/jwt-outsystems-token-example.png" alt="Decoded JWT example showing header and payload">
+
+    <h3>Validating a token</h3>
+    <p>An action (often wired into an API's authentication flow) reads and validates the token on each protected request:</p>
+    <pre><code>ServerAction: ValidateToken
+Inputs:  Token (Text)
+Outputs: IsValid (Boolean), UserId (Text), Roles (List of Text)
+
+1. Result = JWTCore.ValidateToken(Token, SigningKey)
+2. If not Result.IsValid or Result.IsExpired:
+     Return IsValid = False
+3. UserId = Result.Claims.sub
+   Roles   = Result.Claims.roles
+4. Return IsValid = True</code></pre>
+
+    <img src="images/jwt-outsystems-validation-flow.svg" alt="Flow diagram: ValidateToken checks IsValid, branching to a 401 output or setting UserId and Roles">
+
+    <p>From there, the pattern is the same as anywhere else: reject the request with a 401 if the token is invalid or expired, otherwise let it through and use the claims (like <code>roles</code>) to decide what the caller is allowed to do.</p>
 
     <h2>Closing thoughts</h2>
-    <p>Session tokens and JWTs solve the same fundamental problem — carrying identity across an inherently stateless HTTP protocol — with different engineering trade-offs[cite: 1, 2]. Session tokens are centralized and easily revoked but require shared state[cite: 1, 2]; JWTs scale effortlessly across microservices and OutSystems applications but trade away effortless server-side revocation[cite: 1, 2]. Combining short-lived JWT access tokens with a robust refresh strategy gives you the best of both worlds: scalability, strong security, and fine-grained access control[cite: 1, 2].</p>
+    <p>Session tokens and JWTs solve the same problem — carrying identity across an inherently stateless protocol — with different tradeoffs. Sessions are simple and centrally revocable but need shared state; JWTs scale effortlessly but trade away easy revocation. Most real systems end up using JWTs for short-lived access, backed by a refresh-token mechanism that gives back some of that control. Knowing both models — and where each one bends — makes it much easier to pick the right one for a given system.</p>
 
   </main>
 
   <footer class="site-footer">
-    <span>© <span id="year"></span> Ricardo Cruz</span>
+    <span>© <span id="year"></span> Your Name</span>
     <a href="../index.html#articles" class="back-link" style="margin-top:0;">&larr; more articles</a>
   </footer>
 
