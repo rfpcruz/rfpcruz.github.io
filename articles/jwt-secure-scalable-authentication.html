@@ -49,6 +49,7 @@
     border-radius: 3px;
     padding: 3px 8px;
     margin-top: 16px;
+    margin-right: 6px;
   }
 
   .post-body { padding: 40px 0 80px; }
@@ -169,6 +170,8 @@
     <h1>JWT: Secure and Scalable Authentication</h1>
     <p class="post-meta">by Ricardo Cruz</p>
     <span class="post-tag">OutSystems</span>
+    <span class="post-tag">Security</span>
+    <span class="post-tag">Authentication</span>
   </header>
 
   <main class="post-body">
@@ -297,6 +300,8 @@ Outputs: IsValid (Boolean), UserId (Text), Roles (List of Text)
 
     <h2>Closing thoughts</h2>
     <p>Session tokens and JWTs solve the same problem — carrying identity across an inherently stateless protocol — with different tradeoffs. Sessions are simple and centrally revocable but need shared state; JWTs scale effortlessly but trade away easy revocation. Most real systems end up using JWTs for short-lived access, backed by a refresh-token mechanism that gives back some of that control. Knowing both models — and where each one bends — makes it much easier to pick the right one for a given system.</p>
+
+    <p class="post-meta" style="margin-top:32px;">This article is adapted from a talk originally given at Noesis in April 2024.</p>
 
   </main>
 
