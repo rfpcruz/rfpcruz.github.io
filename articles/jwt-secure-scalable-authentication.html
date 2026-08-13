@@ -259,7 +259,7 @@
     </ol>
 
     <h2>Using JWTs in OutSystems</h2>
-    <p>OutSystems doesn't make you build JWT handling from scratch — there's tooling to create, sign and validate tokens in a few different ways (symmetric secrets, asymmetric keys, JSON Web Keys). Below is a simplified setup built on top of that: one action to issue a token after login, and one to validate it on incoming requests.</p>
+    <p>OutSystems doesn't make you build JWT handling from scratch — there's tooling to create, sign and validate tokens in a few different ways (symmetric secrets, asymmetric keys, JSON Web Keys). The screenshot below shows a small demo module with those options grouped under <code>TokenBuilder</code> and <code>TokenReader</code>. For a typical login flow you only need two of them: one to sign a token with a JSON Web Key after login, and one to validate a token on incoming requests — that's what the two examples below walk through.</p>
 
     <img src="images/jwt-outsystems-module-structure.png" alt="OutSystems module structure showing token-signing and token-reading server actions">
 
