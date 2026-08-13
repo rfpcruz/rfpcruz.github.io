@@ -275,7 +275,7 @@ Output:  Token (Text)
      "iat": Now(),
      "exp": AddMinutes(Now(), ExpiresInMinutes)
    }
-2. Token = JWTCore.SignTokenWithJWK(Claims, SigningKey)
+2. Token = JWT_Core.SignTokenWithJWK(Claims, SigningKey)
 3. Return Token</code></pre>
 
     <h3>Validating a token</h3>
@@ -284,7 +284,7 @@ Output:  Token (Text)
 Inputs:  Token (Text)
 Outputs: IsValid (Boolean), UserId (Text), Roles (List of Text)
 
-1. Result = JWTCore.ValidateToken(Token, SigningKey)
+1. Result = JWT_Core.ValidateToken(Token, SigningKey)
 2. If not Result.IsValid or Result.IsExpired:
      Return IsValid = False
 3. UserId = Result.Claims.sub
