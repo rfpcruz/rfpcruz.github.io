@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>JWT: Secure and Scalable Authentication — Your Name</title>
+<title>JWT: Secure and Scalable Authentication — Ricardo Cruz</title>
 <meta name="description" content="A practical walkthrough of session tokens vs JSON Web Tokens, how JWTs are structured and verified, and how to use them safely in OutSystems.">
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -165,9 +165,9 @@
   <a href="../index.html#articles" class="back-link">&larr; back to articles</a>
 
   <header class="post-header">
-    <p class="post-meta">04 Aug 2026 · ~8 min read</p>
+    <p class="post-meta">04 April 2024 · ~8 min read</p>
     <h1>JWT: Secure and Scalable Authentication</h1>
-    <p class="post-meta">by Your Name</p>
+    <p class="post-meta">by Ricardo Cruz</p>
     <span class="post-tag">OutSystems</span>
   </header>
 
@@ -291,9 +291,9 @@ Outputs: IsValid (Boolean), UserId (Text), Roles (List of Text)
    Roles   = Result.Claims.roles
 4. Return IsValid = True</code></pre>
 
-    <img src="images/jwt-outsystems-validation-flow.svg" alt="Flow diagram: ValidateToken checks IsValid, branching to a 401 output or setting UserId and Roles">
-
     <p>From there, the pattern is the same as anywhere else: reject the request with a 401 if the token is invalid or expired, otherwise let it through and use the claims (like <code>roles</code>) to decide what the caller is allowed to do.</p>
+
+    <div class="img-placeholder">[ screenshot placeholder — an action calling ValidateToken, branching to a 401 response on failure or continuing into business logic on success ]</div>
 
     <h2>Closing thoughts</h2>
     <p>Session tokens and JWTs solve the same problem — carrying identity across an inherently stateless protocol — with different tradeoffs. Sessions are simple and centrally revocable but need shared state; JWTs scale effortlessly but trade away easy revocation. Most real systems end up using JWTs for short-lived access, backed by a refresh-token mechanism that gives back some of that control. Knowing both models — and where each one bends — makes it much easier to pick the right one for a given system.</p>
@@ -301,12 +301,11 @@ Outputs: IsValid (Boolean), UserId (Text), Roles (List of Text)
   </main>
 
   <footer class="site-footer">
-    <span>© <span id="year"></span> Your Name</span>
+    <span>© 2024 Ricardo Cruz</span>
     <a href="../index.html#articles" class="back-link" style="margin-top:0;">&larr; more articles</a>
   </footer>
 
 </div>
 
-<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
