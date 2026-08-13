@@ -293,7 +293,7 @@ Outputs: IsValid (Boolean), UserId (Text), Roles (List of Text)
 
     <p>From there, the pattern is the same as anywhere else: reject the request with a 401 if the token is invalid or expired, otherwise let it through and use the claims (like <code>roles</code>) to decide what the caller is allowed to do.</p>
 
-    <div class="img-placeholder">[ screenshot placeholder — an action calling ValidateToken, branching to a 401 response on failure or continuing into business logic on success ]</div>
+    <img src="images/jwt-outsystems-validate-and-dispatch.png" alt="Flow diagram: validating a token, returning a 401 on failure, and dispatching to role-based logic on success">
 
     <h2>Closing thoughts</h2>
     <p>Session tokens and JWTs solve the same problem — carrying identity across an inherently stateless protocol — with different tradeoffs. Sessions are simple and centrally revocable but need shared state; JWTs scale effortlessly but trade away easy revocation. Most real systems end up using JWTs for short-lived access, backed by a refresh-token mechanism that gives back some of that control. Knowing both models — and where each one bends — makes it much easier to pick the right one for a given system.</p>
