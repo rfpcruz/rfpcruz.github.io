@@ -248,24 +248,13 @@ Client 2 ──┘</code></pre>
     <p>This pattern is called <strong>optimistic concurrency control</strong> — optimistic because it doesn't lock the resource up front; it just checks at write time and rejects the loser of the race, leaving that client to re-fetch and retry.</p>
 
     <h3>Implementing it in OutSystems</h3>
-    <p>The pattern maps cleanly onto a typical OutSystems REST API: a <code>PUT</code> action reads the <code>If-Match</code> header, compares it against the stored e-Tag on the record, and only proceeds if they match.</p>
-    <pre><code>ServerAction: UpdateRecord_PUT
-Inputs:  RecordId (Text), IfMatchHeader (Text), NewValues (Record)
-Outputs: HttpStatus (Integer), UpdatedRecord (Record)
+    <p>The pattern splits naturally into two sides: the write action that stamps a fresh e-Tag on every save, and the API action that validates an incoming e-Tag before allowing a write through.</p>
 
-1. Record = GetRecordById(RecordId)
-2. If Record is null:
-     Return HttpStatus = 404
-3. If IfMatchHeader is empty:
-     Return HttpStatus = 428  ' Precondition Required
-4. If IfMatchHeader &lt;&gt; Record.ETag:
-     Return HttpStatus = 412  ' Precondition Failed
-5. Record.Values = NewValues
-   Record.ETag = GenerateGuid()
-6. SaveRecord(Record)
-7. Return HttpStatus = 200, UpdatedRecord = Record</code></pre>
+    <p>On the <strong>create/update</strong> side, the record-saving logic assigns a new e-Tag — here, a fresh GUID — right alongside the other audit fields, before the record is persisted. This is what guarantees that every successful write leaves behind a version stamp reflecting exactly that change:</p>
 
-    <img src="images/etag-outsystems-entity-and-assignment.png" alt="Record entity with an ETag field, and an assignment setting it to a new value on every successful update">
+    <img src="images/etag-outsystems-entity-and-assignment.png" alt="CreateOrUpdate flow assigning a new e-Tag (GenerateGuid) to the record before saving">
+
+    <p>On the <strong>PUT</strong> side, the API action reads the incoming <code>If-Match</code> header and walks through a short chain of checks before it's allowed to touch the record: does the record exist, was an <code>If-Match</code> header sent at all, and does it still match the record's current e-Tag. Only once all three pass does the update proceed — anything else short-circuits into a <code>404</code>, <code>428</code>, or <code>412</code>:</p>
 
     <img src="images/etag-outsystems-put-flow.png" alt="PUT flow in Service Studio branching on missing record (404), missing If-Match (428), and mismatched If-Match (412)">
 
