@@ -156,28 +156,28 @@
 
   <main class="post-body">
 
-    <p class="lede">Every time a browser re-fetches a page it hasn't seen change, or two people edit the same record at once, there's a version-tracking problem underneath. e-Tags (Entity Tags) are the small HTTP header that solves both — one string that lets a server say "this is exactly which version of the resource you're looking at."</p>
+    <p class="lede">Every time a browser re-fetches a page it hasn't seen change, or two people edit the same record at once, there's a version-tracking problem underneath. e-Tags (Entity Tags) are the small HTTP header that solves both: one string that lets a server say "this is exactly which version of the resource you're looking at."</p>
 
     <h2>What are e-Tags?</h2>
     <p>An e-Tag is a unique identifier tied to a specific version of a web resource. Its job is simple: let a client ask the server "has this changed since I last saw it?" without sending or receiving the full resource again.</p>
-    <p>Structurally it's just a quoted string — often a hash of the content — such as <code>"686897696a7c876b7e"</code>. Browsers and servers use it for two related things: optimizing caching, and managing concurrent updates.</p>
+    <p>Structurally it's just a quoted string, often a hash of the content, such as <code>"686897696a7c876b7e"</code>. Browsers and servers use it for two related things: optimizing caching, and managing concurrent updates.</p>
 
     <h3>Why e-Tags matter</h3>
     <ul>
-      <li><strong>Performance</strong> — only changed resources get re-fetched, cutting bandwidth and server load.</li>
-      <li><strong>Smoother UX</strong> — faster loads mean more responsive interactions.</li>
-      <li><strong>Concurrency control</strong> — e-Tags help prevent one update from silently overwriting another.</li>
-      <li><strong>Lower data costs</strong> — fewer redundant downloads matter most on mobile or bandwidth-limited connections.</li>
+      <li><strong>Performance</strong> : only changed resources get re-fetched, cutting bandwidth and server load.</li>
+      <li><strong>Smoother UX</strong> : faster loads mean more responsive interactions.</li>
+      <li><strong>Concurrency control</strong> : e-Tags help prevent one update from silently overwriting another.</li>
+      <li><strong>Lower data costs</strong> : fewer redundant downloads matter most on mobile or bandwidth-limited connections.</li>
     </ul>
 
     <h2>How e-Tags work in webpage caching</h2>
-    <p>Browsers cache resources locally to avoid re-fetching them on every visit; servers cache responses to avoid regenerating them on every request. e-Tags are the version stamp that ties the two together — they let both sides agree on whether a cached copy is still valid.</p>
+    <p>Browsers cache resources locally to avoid re-fetching them on every visit; servers cache responses to avoid regenerating them on every request. e-Tags are the version stamp that ties the two together. They let both sides agree on whether a cached copy is still valid.</p>
 
     <h3>The request/response cycle</h3>
     <ol>
-      <li><strong>Initial request</strong> — the server responds with the content and an <code>ETag</code> header.</li>
-      <li><strong>Subsequent requests</strong> — the browser sends that e-Tag back in an <code>If-None-Match</code> header, asking "is this still current?"</li>
-      <li><strong>Server validation</strong> — if the content is unchanged, the server replies <code>304 Not Modified</code> with no body, saving bandwidth. If it changed, it sends the updated content with a new e-Tag.</li>
+      <li><strong>Initial request</strong> : the server responds with the content and an <code>ETag</code> header.</li>
+      <li><strong>Subsequent requests</strong> : the browser sends that e-Tag back in an <code>If-None-Match</code> header, asking "is this still current?"</li>
+      <li><strong>Server validation</strong> : if the content is unchanged, the server replies <code>304 Not Modified</code> with no body, saving bandwidth. If it changed, it sends the updated content with a new e-Tag.</li>
     </ol>
 
     <h3>Strong vs weak e-Tags</h3>
@@ -185,7 +185,7 @@
       <thead><tr><th>Type</th><th>Meaning</th><th>Example</th></tr></thead>
       <tbody>
         <tr><td>Strong</td><td>Byte-for-byte match required; use when any change matters</td><td><code>ETag: "686897696a7c876b7e"</code></td></tr>
-        <tr><td>Weak</td><td>"Close enough" match — minor/metadata changes don't invalidate it</td><td><code>ETag: W/"686897696a7c876b7e"</code></td></tr>
+        <tr><td>Weak</td><td>"Close enough" match : minor/metadata changes don't invalidate it</td><td><code>ETag: W/"686897696a7c876b7e"</code></td></tr>
       </tbody>
     </table>
 
@@ -203,13 +203,13 @@ etag: W/"124-yiKdLzqO5gfBrJFrcdJ8Yq0LGnU"</code></pre>
 HTTP/2 304
 etag: W/"124-yiKdLzqO5gfBrJFrcdJ8Yq0LGnU"</code></pre>
 
-    <p>Send a <em>different</em> (stale) e-Tag, and the server treats it as a mismatch — it returns <code>200</code> with the full body and the current e-Tag again, exactly as if no e-Tag had been sent at all.</p>
+    <p>Send a <em>different</em> (stale) e-Tag, and the server treats it as a mismatch; it returns <code>200</code> with the full body and the current e-Tag again, exactly as if no e-Tag had been sent at all.</p>
 
     <h2>Using e-Tags for optimistic concurrency control</h2>
     <p>Caching is only half the story. The same version-stamping idea also solves a very different problem: two clients editing the same resource at once.</p>
 
     <h3>The problem</h3>
-    <p>Picture a collaborative app or an inventory system where two clients read the same record, each make an edit, and both write back. Without any version check, whichever write lands last simply overwrites the other — silently.</p>
+    <p>Picture a collaborative app or an inventory system where two clients read the same record, each make an edit, and both write back. Without any version check, whichever write lands last simply overwrites the other silently.</p>
 
     <pre><code>Client 1 ──┐
            │  PUT /record/123
@@ -228,7 +228,7 @@ last silently overwrites the other's write.</code></pre>
     <p>e-Tags give clients a way to say "only apply my update if the resource is still at the version I read." The client sends the e-Tag it read back in an <code>If-Match</code> header on the write request. The server compares it against the resource's current e-Tag:</p>
     <ul>
       <li>If they match, the write goes through and the server issues a new e-Tag for the new version.</li>
-      <li>If they don't match, the resource changed underneath the client — the server rejects the write with <code>412 Precondition Failed</code> instead of silently overwriting.</li>
+      <li>If they don't match, the resource changed underneath the client; the server rejects the write with <code>412 Precondition Failed</code> instead of silently overwriting.</li>
     </ul>
 
     <pre><code>Client 1 ──┐  If-Match: "v1"
@@ -245,16 +245,16 @@ last silently overwrites the other's write.</code></pre>
            │  If-Match: "v1"
 Client 2 ──┘</code></pre>
 
-    <p>This pattern is called <strong>optimistic concurrency control</strong> — optimistic because it doesn't lock the resource up front; it just checks at write time and rejects the loser of the race, leaving that client to re-fetch and retry.</p>
+    <p>This pattern is called <strong>optimistic concurrency control</strong> .Optimistic because it doesn't lock the resource up front; it just checks at write time and rejects the loser of the race, leaving that client to re-fetch and retry.</p>
 
     <h3>Implementing it in OutSystems</h3>
     <p>The pattern splits naturally into two sides: the write action that stamps a fresh e-Tag on every save, and the API action that validates an incoming e-Tag before allowing a write through.</p>
 
-    <p>On the <strong>create/update</strong> side, the record-saving logic assigns a new e-Tag — here, a fresh GUID — right alongside the other audit fields, before the record is persisted. This is what guarantees that every successful write leaves behind a version stamp reflecting exactly that change:</p>
+    <p>On the <strong>create/update</strong> side, the record-saving logic assigns a new e-Tag. Here, a fresh GUID — right alongside the other audit fields, before the record is persisted. This is what guarantees that every successful write leaves behind a version stamp reflecting exactly that change:</p>
 
     <img src="images/etag-outsystems-entity-and-assignment.png" alt="CreateOrUpdate flow assigning a new e-Tag (GenerateGuid) to the record before saving">
 
-    <p>On the <strong>PUT</strong> side, the API action reads the incoming <code>If-Match</code> header and walks through a short chain of checks before it's allowed to touch the record: does the record exist, was an <code>If-Match</code> header sent at all, and does it still match the record's current e-Tag. Only once all three pass does the update proceed — anything else short-circuits into a <code>404</code>, <code>428</code>, or <code>412</code>:</p>
+    <p>On the <strong>PUT</strong> side, the API action reads the incoming <code>If-Match</code> header and walks through a short chain of checks before it's allowed to touch the record: does the record exist, was an <code>If-Match</code> header sent at all, and does it still match the record's current e-Tag. Only once all three pass does the update proceed. Anything else short-circuits into a <code>404</code>, <code>428</code>, or <code>412</code>:</p>
 
     <img src="images/etag-outsystems-put-flow.png" alt="PUT flow in Service Studio branching on missing record (404), missing If-Match (428), and mismatched If-Match (412)">
 
@@ -262,22 +262,22 @@ Client 2 ──┘</code></pre>
 
     <h2>Benefits of e-Tags</h2>
     <ul>
-      <li><strong>Improves caching efficiency</strong> — only modified resources are reloaded.</li>
-      <li><strong>Optimizes server resources</strong> — avoids redundant data transfers and reprocessing.</li>
-      <li><strong>Supports concurrency control</strong> — prevents silent overwrites in multi-user environments.</li>
-      <li><strong>Data consistency</strong> — cached data stays accurate and up to date.</li>
+      <li><strong>Improves caching efficiency</strong> : only modified resources are reloaded.</li>
+      <li><strong>Optimizes server resources</strong> : avoids redundant data transfers and reprocessing.</li>
+      <li><strong>Supports concurrency control</strong> : prevents silent overwrites in multi-user environments.</li>
+      <li><strong>Data consistency</strong> : cached data stays accurate and up to date.</li>
     </ul>
 
     <h2>Limitations of e-Tags</h2>
     <ul>
-      <li><strong>Server overhead</strong> — generating and validating e-Tags adds load, especially for dynamic content.</li>
-      <li><strong>Scalability</strong> — managing e-Tags efficiently across many resources gets harder at high traffic.</li>
-      <li><strong>Inconsistent weak e-Tag support</strong> — some browsers and caches don't fully honor weak e-Tags.</li>
-      <li><strong>Implementation complexity</strong> — both server and client need extra logic to generate, send, and check them correctly.</li>
+      <li><strong>Server overhead</strong> : generating and validating e-Tags adds load, especially for dynamic content.</li>
+      <li><strong>Scalability</strong> : managing e-Tags efficiently across many resources gets harder at high traffic.</li>
+      <li><strong>Inconsistent weak e-Tag support</strong> : some browsers and caches don't fully honor weak e-Tags.</li>
+      <li><strong>Implementation complexity</strong> : both server and client need extra logic to generate, send, and check them correctly.</li>
     </ul>
 
     <h2>Closing thoughts</h2>
-    <p>e-Tags solve two problems with one mechanism: they tell a cache when it can skip a re-fetch, and they tell a write when it's about to clobber someone else's change. Both come down to the same question — "is this still the version I think it is?" Once that clicks, deciding where to add e-Tags to your own APIs becomes a lot more obvious: any resource that's read often, or written by more than one client, is a candidate.</p>
+    <p>e-Tags solve two problems with one mechanism: they tell a cache when it can skip a re-fetch, and they tell a write when it's about to clobber someone else's change. Both come down to the same question: "is this still the version I think it is?" Once that clicks, deciding where to add e-Tags to your own APIs becomes a lot more obvious: any resource that's read often, or written by more than one client, is a candidate.</p>
 
     <p class="post-meta" style="margin-top:32px;">This article is adapted from a talk originally given at Noesis on 15 November 2024.</p>
 
