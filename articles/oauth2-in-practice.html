@@ -235,14 +235,7 @@ Authorization: Bearer {ACCESS_TOKEN}</code></pre>
 
     <h2>Implementing it in OutSystems</h2>
     <p>The flow maps cleanly onto OutSystems building blocks. A dedicated <code>OAuth</code> module wraps the token exchange as a reusable server action, <code>GetAccessToken</code>, which takes the authorization code, redirect URI, client ID and client secret as inputs and returns the access token and its expiry:</p>
-    <pre><code>ServerAction: OAuth_GetToken
-Inputs:  AuthorizationCode, RedirectURI, ClientID, ClientSecret
-Outputs: AccessToken, ExpiresIn
 
-1. GetAccessToken = Linkedin_API.GetAccessToken(
-     AuthorizationCode, RedirectURI, ClientID, ClientSecret)
-2. Token.AccessToken = GetAccessToken.Response.Access_token
-3. Token.ExpiresIn  = GetAccessToken.Response.Expires_in</code></pre>
     <img src="images/oauth-outsystems-gettoken-flow.png" alt="OutSystems server action flow calling GetAccessToken and assigning the response to a Token structure">
 
     <p>The calling flow is a straightforward Preparation on the callback page: read the authorization code LinkedIn appended to the URL, hand it to <code>OAuth_GetToken</code>, store the resulting access token in the session, and then use it to fetch whatever data the app needs (a basic profile, a photo) before moving on to the actual feature, such as a "share post" page.</p>
