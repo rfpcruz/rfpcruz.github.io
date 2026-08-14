@@ -209,8 +209,7 @@
 
     <p>Rather than giving an answer straight away, the LLM is prompted to output its "Thought," define an "Action" (calling an external tool), and wait for the "Observation" (the result of that tool).</p>
 
-    <img src="images/react-loop-diagram.svg" alt="ReAct loop diagram showing the LLM cycling through Thought, Action and Observation steps until it produces a final answer">
-
+    
     <h3>The engineering trade-offs</h3>
     <p>While agents are very incredible and powerful whey introduce massive challenges that Tech Leads must carefully architect for:</p>
     <ul>
@@ -226,8 +225,7 @@
 
     <p>We can think of MCP exactly as a SysAdmin views REST or POSIX standards. Before MCP, if you wanted an AI agent to access a database, check a GitHub repository, or parse local logs, you had to write a custom, fragile API connector for each specific use case.</p>
 
-    <img src="images/mcp-client-server-architecture.png" alt="MCP architecture diagram showing an LLM application as an MCP client connecting through a standardized protocol to multiple MCP servers exposing databases, repositories and file systems">
-
+    
     <h2>The Architectural Matrix: Knowledge vs. Access vs. Capability</h2>
     <p>When designing enterprise AI systems, you’ll often hear RAG, MCP, and Agent Skills discussed together. But as architects, we must avoid using them as interchangeable buzzwords because they solve fundamentally different engineering problems. Understanding where each belongs in your stack is critical.</p>
 
