@@ -160,26 +160,26 @@
 
     <h2>What is OAuth 2.0?</h2>
     <p>Per its defining document, <a href="https://www.rfc-editor.org/rfc/rfc6749" target="_blank" rel="noopener">RFC 6749</a>, OAuth 2.0 is a framework that lets a third-party application obtain limited access to an HTTP service, either on behalf of a resource owner through an approval step, or on the application's own behalf.</p>
-    <p>In plainer terms: <strong>OAuth 2.0 is a delegation protocol that lets people allow applications to access things on their behalf.</strong> It answers a narrower question than login forms suggest — not "who are you," but "what is this application allowed to do for you."</p>
+    <p>In plainer terms: <strong>OAuth 2.0 is a delegation protocol that lets people allow applications to access things on their behalf.</strong> It answers a narrower question than login forms suggest: not "who are you," but "what is this application allowed to do for you."</p>
 
     <h3>Authentication vs authorization</h3>
     <p>The two are easy to conflate because OAuth flows often start with a login screen, but they solve different problems:</p>
     <ul>
-      <li><strong>Authentication</strong> — who you are.</li>
-      <li><strong>Authorization</strong> — what you can do.</li>
+      <li><strong>Authentication</strong> : who you are.</li>
+      <li><strong>Authorization</strong> : what you can do.</li>
     </ul>
     <p>When a LinkedIn consent screen lists permissions like "use your name and photo" or "post, comment and like posts on your behalf", that's the authorization half — the user deciding what the requesting application may do, after LinkedIn has already authenticated them.</p>
 
     <h3>The three roles</h3>
     <p>Every OAuth 2.0 exchange involves three parties:</p>
     <ul>
-      <li><strong>User</strong> (resource owner) — the person granting access.</li>
-      <li><strong>App</strong> (client) — the application requesting access on the user's behalf.</li>
-      <li><strong>API</strong> (resource server, behind an authorization server) — the service holding the protected data, such as LinkedIn.</li>
+      <li><strong>User</strong> (resource owner) : the person granting access.</li>
+      <li><strong>App</strong> (client) : the application requesting access on the user's behalf.</li>
+      <li><strong>API</strong> (resource server, behind an authorization server) : the service holding the protected data, such as LinkedIn.</li>
     </ul>
     <img src="images/oauth-roles-user-app-api.png" alt="The three OAuth 2.0 roles: User, App and API, illustrated with rSource as the app and LinkedIn as the API">
 
-    <p>A common misconception is that logging into an app "with LinkedIn" means that app now stores the user's LinkedIn username and password. It doesn't — and it's worth stating plainly: <strong>passwords are never exchanged between servers within an OAuth 2.0 framework.</strong> The app only ever receives a token, scoped to specific permissions, that LinkedIn itself issued.</p>
+    <p>A common misconception is that logging into an app "with LinkedIn" means that app now stores the user's LinkedIn username and password. It doesn't  and it's worth stating plainly: <strong>passwords are never exchanged between servers within an OAuth 2.0 framework.</strong> The app only ever receives a token, scoped to specific permissions, that LinkedIn itself issued.</p>
 
     <h2>How the workflow fits together</h2>
     <p>At a high level, three parties exchange four artifacts:</p>
@@ -199,7 +199,7 @@
     <h2>The Authorization Code flow, step by step</h2>
 
     <h3>Step 1 — Configure the application</h3>
-    <p>Everything starts on <a href="https://www.linkedin.com/developers/" target="_blank" rel="noopener">LinkedIn for Developers</a>: register a new application, note its Client ID and Client Secret, request the permissions (scopes) it needs — such as <code>r_liteprofile</code>, <code>r_emailaddress</code> or <code>w_member_social</code> — and register a callback URL on your own server that LinkedIn is allowed to redirect back to.</p>
+    <p>Everything starts on <a href="https://www.linkedin.com/developers/" target="_blank" rel="noopener">LinkedIn for Developers</a>: register a new application, note its Client ID and Client Secret, request the permissions (scopes) it needs, such as <code>r_liteprofile</code>, <code>r_emailaddress</code> or <code>w_member_social</code>, and register a callback URL on your own server that LinkedIn is allowed to redirect back to.</p>
 
     <img src="images/oauth-outsystems-app-credentials.png" alt="LinkedIn Developers application page showing Client ID, Client Secret, requested permissions and the registered OAuth 2.0 redirect URL">
 
@@ -215,7 +215,7 @@
     <p>The <code>state</code> parameter is worth keeping: it's an unguessable string the app generates and later verifies on the callback, and its job is to prevent cross-site request forgery against the callback endpoint.</p>
 
     <h3>Step 3 — Exchange the code for an access token</h3>
-    <p>The callback URL receives an authorization <code>code</code> as a query parameter. The app's server then exchanges it directly with LinkedIn for an access token — this call happens server-to-server, so the Client Secret never touches the browser:</p>
+    <p>The callback URL receives an authorization <code>code</code> as a query parameter. The app's server then exchanges it directly with LinkedIn for an access token, this call happens server-to-server, so the Client Secret never touches the browser:</p>
     <pre><code>POST https://www.linkedin.com/oauth/v2/accessToken
 Content-Type: application/x-www-form-urlencoded
 
@@ -224,7 +224,7 @@ grant_type=authorization_code
 &redirect_uri={REDIRECT_URI}
 &client_id={CLIENT_ID}
 &client_secret={CLIENT_SECRET}</code></pre>
-    <p>A successful call returns a JSON object with an <code>access_token</code> and an <code>expires_in</code> value — at the time of this integration, LinkedIn issued tokens with a 60-day lifespan.</p>
+    <p>A successful call returns a JSON object with an <code>access_token</code> and an <code>expires_in</code> value, at the time of this integration, LinkedIn issued tokens with a 60-day lifespan.</p>
 
     <h3>Step 4 — Make authenticated requests</h3>
     <p>From that point on, every call to LinkedIn's API carries the token in an <code>Authorization</code> header:</p>
@@ -245,7 +245,7 @@ Outputs: AccessToken, ExpiresIn
 3. Token.ExpiresIn  = GetAccessToken.Response.Expires_in</code></pre>
     <img src="images/oauth-outsystems-gettoken-flow.png" alt="OutSystems server action flow calling GetAccessToken and assigning the response to a Token structure">
 
-    <p>The calling flow is a straightforward Preparation on the callback page: read the authorization code LinkedIn appended to the URL, hand it to <code>OAuth_GetToken</code>, store the resulting access token in the session, and then use it to fetch whatever data the app needs — a basic profile, a photo — before moving on to the actual feature, such as a "share post" page.</p>
+    <p>The calling flow is a straightforward Preparation on the callback page: read the authorization code LinkedIn appended to the URL, hand it to <code>OAuth_GetToken</code>, store the resulting access token in the session, and then use it to fetch whatever data the app needs (a basic profile, a photo) before moving on to the actual feature, such as a "share post" page.</p>
 
     <img src="images/oauth-outsystems-callback-preparation.png" alt="OutSystems Preparation flow on the callback page: set authorization code, handle callback, get token, set LinkedIn access data, then fetch profile and photo">
     <p>On the REST consumer side, an <code>OnBeforeRequest</code> handler on the Linkedin_API REST entity sets the <code>Authorization</code> header on every outgoing call:</p>
@@ -257,13 +257,13 @@ HTTP_header.Value = "Bearer " + Session.LinkedInAccess.AccessToken</code></pre>
 
     <h2>Where it's worth using OAuth 2.0</h2>
     <ul>
-      <li><strong>Social login</strong> — letting users authenticate through an identity provider they already trust, without the app ever seeing a password.</li>
-      <li><strong>Posting or acting on the user's behalf</strong> — publishing content, sharing updates, or performing actions on a third-party platform, as with the LinkedIn job-posting case here.</li>
-      <li><strong>Scoped, revocable access</strong> — since permissions are explicit and grants can be revoked by the user at any time from the provider's own settings, without the app needing to be involved.</li>
+      <li><strong>Social login</strong> : letting users authenticate through an identity provider they already trust, without the app ever seeing a password.</li>
+      <li><strong>Posting or acting on the user's behalf</strong> : publishing content, sharing updates, or performing actions on a third-party platform, as with the LinkedIn job-posting case here.</li>
+      <li><strong>Scoped, revocable access</strong> : since permissions are explicit and grants can be revoked by the user at any time from the provider's own settings, without the app needing to be involved.</li>
     </ul>
 
     <h2>Closing thoughts</h2>
-    <p>OAuth 2.0's value is easy to undersell because most people only ever see its login button. Underneath, it's solving a more specific problem: giving an application a scoped, revocable, password-free way to act on a user's behalf — a distinction that becomes obvious the moment an integration needs to do more than just confirm who someone is, like posting a job announcement to LinkedIn without ever touching a LinkedIn password.</p>
+    <p>OAuth 2.0's value is easy to undersell because most people only ever see its login button. Underneath, it's solving a more specific problem: giving an application a scoped, revocable, password-free way to act on a user's behalf; a distinction that becomes obvious the moment an integration needs to do more than just confirm who someone is, like posting a job announcement to LinkedIn without ever touching a LinkedIn password.</p>
 
     <p class="post-meta" style="margin-top:32px;">This article is adapted from a talk originally given at Noesis in March 2019.</p>
 
