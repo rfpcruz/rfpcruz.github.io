@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beyond the Hype: An Architectural Breakdown of Modern AI Systems — Ricardo Cruz</title>
+<meta name="description" content="A systems-engineering breakdown of modern AI architecture: the LLM as static intelligence, RAG as injected context, Agents as autonomous action, and MCP as the standardized communication layer.">
+<meta property="article:published_time" content="2026-07-16">
+<meta property="article:author" content="Ricardo Cruz">
+<meta property="og:title" content="Beyond the Hype: An Architectural Breakdown of Modern AI Systems">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://rfpcruz.github.io/articles/beyond-the-hype-ai-architecture.html">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .article-page { max-width: 720px; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-decoration: none;
+    margin-top: 40px;
+  }
+  .back-link:hover { color: var(--accent); }
+
+  .post-header { padding: 24px 0 32px; border-bottom: 1px solid var(--line); }
+  .post-header h1 {
+    font-family: var(--mono);
+    font-size: 1.7rem;
+    line-height: 1.3;
+    margin: 12px 0 0;
+  }
+  .post-meta {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin-top: 14px;
+  }
+  .post-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 3px 8px;
+    margin-top: 16px;
+    margin-right: 6px;
+  }
+
+  .post-body { padding: 40px 0 80px; }
+  .post-body h2 {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    margin: 48px 0 16px;
+    color: var(--text);
+  }
+  .post-body h2:first-child { margin-top: 0; }
+  .post-body h3 {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    color: var(--accent);
+    margin: 28px 0 10px;
+  }
+  .post-body p { margin: 0 0 16px; }
+  .post-body ul, .post-body ol { margin: 0 0 16px; padding-left: 22px; }
+  .post-body li { margin-bottom: 8px; }
+  .post-body strong { color: var(--text); }
+
+  .lede { font-size: 1.05rem; color: var(--muted); }
+
+  pre {
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 0 0 20px;
+  }
+  code { font-family: var(--mono); font-size: 0.85rem; }
+  :not(pre) > code {
+    background: var(--bg-alt);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--line);
+  }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    padding: 4px 0 4px 16px;
+    color: var(--muted);
+    margin: 0 0 20px;
+  }
+
+  .img-placeholder {
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    padding: 48px 20px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin: 0 0 24px;
+  }
+
+  .post-body img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin: 0 0 24px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 20px;
+    font-size: 0.92rem;
+  }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  th {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="stripe" aria-hidden="true"></div>
+
+<div class="wrap article-page">
+
+  <a href="../index.html#articles" class="back-link">&larr; back to articles</a>
+
+  <header class="post-header">
+    <p class="post-meta">16 July 2026 · ~7 min read</p>
+    <h1>Beyond the Hype: An Architectural Breakdown of Modern AI Systems</h1>
+    <p class="post-meta">by Ricardo Cruz</p>
+    <span class="post-tag">AI</span>
+    <span class="post-tag">Architecture</span>
+    <span class="post-tag">MCP</span>
+    <span class="post-tag">RAG</span>
+  </header>
+
+  <main class="post-body">
+
+    <p class="lede">If you spend any time on tech LinkedIn or X, you have likely seen a flood of content reducing Artificial Intelligence to "vibe coding" or writing clever prompts. But as software engineers, systems architects, and Tech Leads, we know that sending a string to a black-box API is not how you build scalable, production-ready enterprise applications.</p>
+
+    <p>A standalone Large Language Model (LLM) cannot solve complex enterprise problems. It doesn't have access to your live databases, it doesn't know your business logic, it has zero state persistence, and it cannot execute actions.</p>
+
+    <p>To build real value, we need to look past the foundational model and focus on the <strong>system architecture</strong> surrounding it. To make sense of this rapidly evolving ecosystem, it helps to map a complete, enterprise-grade AI system to a human analogy: an intelligent core (the Brain), a contextual memory layer (Books), an execution loop (Hands), and a standardized communication framework (the Nervous System).</p>
+
+    <p>Let's break down the anatomy of a modern AI system, looking past the hype and focusing on the low-level mechanics and engineering trade-offs of each component.</p>
+
+    <h2>1. The LLM (The Brain) — Static Intelligence</h2>
+    <p>In any modern AI system, the <strong>LLM acts as "The Brain"</strong> — the core intelligence layer responsible for reasoning and text generation, trained on massive historical datasets.</p>
+    <p>However, to architect systems around it, we must understand exactly what this "brain" is under the hood.</p>
+
+    <h3>The low-level reality</h3>
+    <p>An LLM does not "think," nor does it possess a database of facts inside its neural network. At its core, an LLM is a massive, frozen file of mathematical weights. When you send a prompt to a model, you are passing data through a complex mathematical function (the Transformer architecture) that calculates a probability distribution to predict the next most likely word token.</p>
+    <p>From a systems engineering or SysAdmin perspective, you should treat a raw LLM like a <strong>massive, read-only cache</strong> that was completely frozen on the day training was completed.</p>
+
+    <h3>The architectural limitations</h3>
+    <p>Because the model is a static snapshot of past data, it introduces two distinct architectural challenges:</p>
+    <ul>
+      <li><strong>No live data</strong> — if a model's training data cut off six months ago, it has zero awareness of anything that happened yesterday, let alone a real-time bank transaction or a user's current session state.</li>
+      <li><strong>Hallucinations</strong> — when an LLM encounters a gap in its knowledge, it doesn't return a <code>404 Not Found</code>. Because its fundamental mandate is to predict the next logical token, it will mathematically generate text that <em>sounds</em> perfectly plausible but is factually incorrect. It optimizes for linguistic coherence, not factual accuracy.</li>
+    </ul>
+
+    <h2>2. RAG (Brain + Memory) — Injected Context</h2>
+    <p>To solve the limitations of static intelligence without spending millions of dollars re-training or fine-tuning a model, we use <strong>Retrieval-Augmented Generation (RAG)</strong>. If the LLM is a brilliant brain taking an exam, RAG is the act of handing that brain an open textbook containing the exact information it needs right before it answers.</p>
+
+    <h3>The low-level reality</h3>
+    <p>RAG introduces a data ingestion and retrieval pipeline into your architecture. Instead of expecting the LLM to know the answer, your application fetches the relevant context from your private data sources <em>first</em>, and then passes both the context and the user query to the LLM.</p>
+    <p>As an engineer, you need to understand the underlying mechanics of this pipeline:</p>
+    <ol>
+      <li><strong>Embeddings</strong> — your unstructured enterprise data (PDFs, documentation, database rows) is broken down into chunks and passed through an embedding model. This model converts text into a high-dimensional vector (a string of numbers) that represents its mathematical <em>semantic meaning</em>.</li>
+      <li><strong>Vector databases</strong> — these vectors are stored in specialized databases (e.g., pgvector, Chroma, Pinecone).</li>
+      <li><strong>Semantic search</strong> — when a user asks a question, their query is also converted into a vector. Your system performs a similarity search (like Cosine Distance) against the Vector DB to find the chunks of data closest in meaning to the user's request.</li>
+    </ol>
+
+    <h2>3. AI Agents (Brain + Hands) — Autonomous Action</h2>
+    <p>While RAG makes the system factually accurate, it is still passive — it only responds to static inputs. To build truly disruptive applications, the system needs the ability to execute tasks. This introduces <strong>AI Agents</strong>, which represent the "Hands" of the system.</p>
+
+    <h3>The low-level reality</h3>
+    <p>An AI Agent shifts the paradigm from simple question-answering to autonomous execution. It achieves this by utilizing a design pattern known as the <strong>ReAct (Reasoning and Acting) loop</strong>.</p>
+    <p>Instead of generating a final answer immediately, the LLM is prompted to output its "Thought," define an "Action" (calling an external tool), and wait for the "Observation" (the result of that tool).</p>
+
+    <h3>The engineering trade-offs</h3>
+    <p>While highly powerful, Agents introduce massive challenges that Tech Leads must carefully architect for:</p>
+    <ul>
+      <li><strong>Latency</strong> — a single user request might trigger 4 or 5 internal reasoning loops. If each LLM API call takes 1.5 seconds, your user is now waiting nearly 10 seconds for a response.</li>
+      <li><strong>Compounding token costs</strong> — you must pass the entire conversation history, thoughts, and tool outputs back into the LLM on <em>every single turn</em> of the loop, making token consumption grow exponentially.</li>
+    </ul>
+
+    <h2>4. MCP (The Nervous System) — The Standardized Communication Protocol</h2>
+    <p>If the LLM is the brain, RAG is the memory, and Agents are the hands, how do they all securely communicate with your enterprise infrastructure? This is where the industry has historically struggled, and it is where the concept of the <strong>Model Context Protocol (MCP)</strong> enters as the "Nervous System."</p>
+
+    <h3>The low-level reality</h3>
+    <p>Launched open-source by Anthropic, <strong>MCP is an open, standardized architectural protocol</strong> — built on top of JSON-RPC 2.0 — that establishes a secure client-server relationship between LLM applications and data sources.</p>
+    <p>Think of MCP exactly how a SysAdmin views <strong>REST, gRPC, or POSIX standards</strong>. Before MCP, if you wanted an AI agent to read a database, check a GitHub repository, or parse local logs, you had to write a bespoke, fragile API connector for each specific use case.</p>
+
+    <h2>The Architectural Matrix: Knowledge vs. Access vs. Capability</h2>
+    <p>When designing enterprise AI, you will often hear RAG, MCP, and Agent Skills mentioned in the same breath. However, as architects, we must avoid treating them as interchangeable buzzwords. They solve fundamentally different engineering problems, and understanding where each belongs in your stack is critical.</p>
+    <p>To design an agent that moves beyond a basic chat interface and actually executes enterprise workflows, you need to map them to three distinct layers:</p>
+    <ul>
+      <li><strong>RAG (The Knowledge Layer)</strong> — gives the agent <em>knowledge</em>. It resolves the problem of finding the right context and grounding responses in trusted data to eliminate hallucinations.</li>
+      <li><strong>MCP (The Integration Layer)</strong> — gives the agent <em>access</em>. It resolves the problem of connectivity, replacing fragile, custom-built API integrations with a secure, standardized protocol.</li>
+      <li><strong>Agent Skills (The Execution Layer)</strong> — gives the agent <em>capability</em>. This is the runtime configuration — the predefined prompts, specific tools, and structured workflows that allow an agent to perform repeatable, reliable actions.</li>
+    </ul>
+
+    <table>
+      <thead>
+        <tr><th>Layer</th><th>Component</th><th>Core function</th><th>What it gives the agent</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Knowledge</td><td>RAG</td><td>Retrieves relevant context before answering</td><td><strong>Knowledge</strong></td></tr>
+        <tr><td>Integration</td><td>MCP</td><td>Connects to systems via a standard protocol</td><td><strong>Access</strong></td></tr>
+        <tr><td>Execution</td><td>Agent Skills</td><td>Performs structured, repeatable workflows</td><td><strong>Capability</strong></td></tr>
+      </tbody>
+    </table>
+
+    <p>The real architectural value is not in choosing one over the other. A robust, production-ready system orchestrates all three: <strong>RAG retrieves the right information, MCP connects to the right systems, and Skills execute the right actions.</strong></p>
+
+    <h2>Conclusion: Engineering the Future of AI</h2>
+    <p>Building enterprise-grade AI is not about writing a lucky prompt. It is about <strong>systems engineering</strong>. We must manage the static limitations of the <strong>LLM</strong>, architect efficient retrieval pipelines with <strong>RAG</strong>, monitor the compounding latency of <strong>Agents</strong>, and enforce standardized communication through protocols like <strong>MCP</strong>.</p>
+    <p>Once we control the architecture, the next major challenge is ensuring that our development workflows scale. How do we ensure that agents build exactly what we want without spinning into chaotic code generation?</p>
+    <p>In my next article, I will dive into <strong>Spec-Driven Development (SDD)</strong> — the engineering methodology that leverages precise software specifications to move AI coding from an unpredictable guessing game into an automated, highly disciplined assembly line.</p>
+    <p>Stay tuned, and let's keep engineering.</p>
+
+  </main>
+
+  <footer class="site-footer">
+    <span>© 2026 Ricardo Cruz</span>
+    <a href="../index.html#articles" class="back-link" style="margin-top:0;">&larr; more articles</a>
+  </footer>
+
+</div>
+
+</body>
+</html>
