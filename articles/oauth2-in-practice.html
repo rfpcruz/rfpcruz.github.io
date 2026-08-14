@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OAuth 2.0 in Practice: Delegated Access and a LinkedIn Integration — Ricardo Cruz</title>
+<meta name="description" content="What OAuth 2.0 actually delegates, how the Authorization Code flow works step by step, and how it was implemented in OutSystems to post job announcements to LinkedIn.">
+<meta property="article:published_time" content="2019-03-01">
+<meta property="article:author" content="Ricardo Cruz">
+<meta property="og:title" content="OAuth 2.0 in Practice: Delegated Access and a LinkedIn Integration">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://rfpcruz.github.io/articles/oauth2-in-practice.html">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .article-page { max-width: 720px; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-decoration: none;
+    margin-top: 40px;
+  }
+  .back-link:hover { color: var(--accent); }
+
+  .post-header { padding: 24px 0 32px; border-bottom: 1px solid var(--line); }
+  .post-header h1 {
+    font-family: var(--mono);
+    font-size: 1.7rem;
+    line-height: 1.3;
+    margin: 12px 0 0;
+  }
+  .post-meta {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin-top: 14px;
+  }
+  .post-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 3px 8px;
+    margin-top: 16px;
+    margin-right: 6px;
+  }
+
+  .post-body { padding: 40px 0 80px; }
+  .post-body h2 {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    margin: 48px 0 16px;
+    color: var(--text);
+  }
+  .post-body h2:first-child { margin-top: 0; }
+  .post-body h3 {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    color: var(--accent);
+    margin: 28px 0 10px;
+  }
+  .post-body p { margin: 0 0 16px; }
+  .post-body ul, .post-body ol { margin: 0 0 16px; padding-left: 22px; }
+  .post-body li { margin-bottom: 8px; }
+  .post-body strong { color: var(--text); }
+
+  .lede { font-size: 1.05rem; color: var(--muted); }
+
+  pre {
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 0 0 20px;
+  }
+  code { font-family: var(--mono); font-size: 0.85rem; }
+  :not(pre) > code {
+    background: var(--bg-alt);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--line);
+  }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    padding: 4px 0 4px 16px;
+    color: var(--muted);
+    margin: 0 0 20px;
+  }
+
+  .img-placeholder {
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    padding: 48px 20px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin: 0 0 24px;
+  }
+
+  .post-body img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin: 0 0 24px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 20px;
+    font-size: 0.92rem;
+  }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  th {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="stripe" aria-hidden="true"></div>
+
+<div class="wrap article-page">
+
+  <a href="../index.html#articles" class="back-link">&larr; back to articles</a>
+
+  <header class="post-header">
+    <p class="post-meta">March 2019 · ~8 min read</p>
+    <h1>OAuth 2.0 in Practice: Delegated Access and a LinkedIn Integration</h1>
+    <p class="post-meta">by Ricardo Cruz</p>
+    <span class="post-tag">OutSystems</span>
+    <span class="post-tag">Security</span>
+    <span class="post-tag">OAuth</span>
+  </header>
+
+  <main class="post-body">
+
+    <p class="lede">Every "Continue with Google" or "Log in with LinkedIn" button on the web is powered by the same idea: letting an application act on your behalf without ever handing it your password. That idea is OAuth 2.0 — a delegation protocol, not a login system, even though it's most often seen wearing a login button's clothes.</p>
+
+    <h2>What is OAuth 2.0?</h2>
+    <p>Per its defining document, <a href="https://www.rfc-editor.org/rfc/rfc6749" target="_blank" rel="noopener">RFC 6749</a>, OAuth 2.0 is a framework that lets a third-party application obtain limited access to an HTTP service, either on behalf of a resource owner through an approval step, or on the application's own behalf.</p>
+    <p>In plainer terms: <strong>OAuth 2.0 is a delegation protocol that lets people allow applications to access things on their behalf.</strong> It answers a narrower question than login forms suggest — not "who are you," but "what is this application allowed to do for you."</p>
+
+    <h3>Authentication vs authorization</h3>
+    <p>The two are easy to conflate because OAuth flows often start with a login screen, but they solve different problems:</p>
+    <ul>
+      <li><strong>Authentication</strong> — who you are.</li>
+      <li><strong>Authorization</strong> — what you can do.</li>
+    </ul>
+    <p>When a LinkedIn consent screen lists permissions like "use your name and photo" or "post, comment and like posts on your behalf", that's the authorization half — the user deciding what the requesting application may do, after LinkedIn has already authenticated them.</p>
+
+    <h3>The three roles</h3>
+    <p>Every OAuth 2.0 exchange involves three parties:</p>
+    <ul>
+      <li><strong>User</strong> (resource owner) — the person granting access.</li>
+      <li><strong>App</strong> (client) — the application requesting access on the user's behalf.</li>
+      <li><strong>API</strong> (resource server, behind an authorization server) — the service holding the protected data, such as LinkedIn.</li>
+    </ul>
+    <img src="images/oauth-roles-user-app-api.png" alt="The three OAuth 2.0 roles: User, App and API, illustrated with rSource as the app and LinkedIn as the API">
+
+    <p>A common misconception is that logging into an app "with LinkedIn" means that app now stores the user's LinkedIn username and password. It doesn't — and it's worth stating plainly: <strong>passwords are never exchanged between servers within an OAuth 2.0 framework.</strong> The app only ever receives a token, scoped to specific permissions, that LinkedIn itself issued.</p>
+
+    <h2>How the workflow fits together</h2>
+    <p>At a high level, three parties exchange four artifacts:</p>
+    <ol>
+      <li>The app sends an <strong>authorization request</strong> to the authorization server.</li>
+      <li>The authorization server returns an <strong>authorization grant</strong> once the user approves.</li>
+      <li>The app exchanges that grant for an <strong>access token</strong>.</li>
+      <li>The app presents the access token to the <strong>resource server</strong> and receives the protected resource.</li>
+    </ol>
+    <img src="images/oauth-workflow-diagram.png" alt="OAuth 2.0 workflow diagram showing the app exchanging an authorization grant for an access token with the authorization server, then using it against the resource server">
+
+    <p>The rest of this article walks through the most common way of producing that sequence: the <strong>Authorization Code flow</strong>, also called 3-legged OAuth because it involves the user's browser, the app's server, and the authorization server as three distinct legs of the exchange.</p>
+
+    <h2>Why this came up</h2>
+    <p>The concrete case behind this article was rSource, a recruitment application whose users wanted to publish job announcements directly to LinkedIn without leaving the app. LinkedIn's own connector for the platform was heading toward deprecation, which meant implementing the OAuth 2.0 flow directly against LinkedIn's API.</p>
+
+    <h2>The Authorization Code flow, step by step</h2>
+
+    <h3>Step 1 — Configure the application</h3>
+    <p>Everything starts on <a href="https://www.linkedin.com/developers/" target="_blank" rel="noopener">LinkedIn for Developers</a>: register a new application, note its Client ID and Client Secret, request the permissions (scopes) it needs — such as <code>r_liteprofile</code>, <code>r_emailaddress</code> or <code>w_member_social</code> — and register a callback URL on your own server that LinkedIn is allowed to redirect back to.</p>
+
+    <img src="images/oauth-outsystems-app-credentials.png" alt="LinkedIn Developers application page showing Client ID, Client Secret, requested permissions and the registered OAuth 2.0 redirect URL">
+
+    <h3>Step 2 — Request an authorization code</h3>
+    <p>The app redirects the user's browser to LinkedIn's OAuth 2.0 authorization page, where the user either accepts or denies the requested permissions:</p>
+    <pre><code>GET https://www.linkedin.com/oauth/v2/authorization
+    ?response_type=code
+    &client_id={CLIENT_ID}
+    &redirect_uri={REDIRECT_URI}
+    &state={RANDOM_STRING}
+    &scope=r_liteprofile%20r_emailaddress%20w_member_social</code></pre>
+    <p>Two outcomes follow: if the user has never granted permission before (or the grant expired or was revoked), they see LinkedIn's consent screen and, once they accept, the browser is redirected back to <code>redirect_uri</code>. If a valid grant already exists, the consent screen is skipped and the redirect happens immediately.</p>
+    <p>The <code>state</code> parameter is worth keeping: it's an unguessable string the app generates and later verifies on the callback, and its job is to prevent cross-site request forgery against the callback endpoint.</p>
+
+    <h3>Step 3 — Exchange the code for an access token</h3>
+    <p>The callback URL receives an authorization <code>code</code> as a query parameter. The app's server then exchanges it directly with LinkedIn for an access token — this call happens server-to-server, so the Client Secret never touches the browser:</p>
+    <pre><code>POST https://www.linkedin.com/oauth/v2/accessToken
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code
+&code={AUTHORIZATION_CODE}
+&redirect_uri={REDIRECT_URI}
+&client_id={CLIENT_ID}
+&client_secret={CLIENT_SECRET}</code></pre>
+    <p>A successful call returns a JSON object with an <code>access_token</code> and an <code>expires_in</code> value — at the time of this integration, LinkedIn issued tokens with a 60-day lifespan.</p>
+
+    <h3>Step 4 — Make authenticated requests</h3>
+    <p>From that point on, every call to LinkedIn's API carries the token in an <code>Authorization</code> header:</p>
+    <pre><code>GET /v1/people/~ HTTP/1.1
+Host: api.linkedin.com
+Connection: Keep-Alive
+Authorization: Bearer {ACCESS_TOKEN}</code></pre>
+
+    <h2>Implementing it in OutSystems</h2>
+    <p>The flow maps cleanly onto OutSystems building blocks. A dedicated <code>OAuth</code> module wraps the token exchange as a reusable server action, <code>GetAccessToken</code>, which takes the authorization code, redirect URI, client ID and client secret as inputs and returns the access token and its expiry:</p>
+    <pre><code>ServerAction: OAuth_GetToken
+Inputs:  AuthorizationCode, RedirectURI, ClientID, ClientSecret
+Outputs: AccessToken, ExpiresIn
+
+1. GetAccessToken = Linkedin_API.GetAccessToken(
+     AuthorizationCode, RedirectURI, ClientID, ClientSecret)
+2. Token.AccessToken = GetAccessToken.Response.Access_token
+3. Token.ExpiresIn  = GetAccessToken.Response.Expires_in</code></pre>
+    <img src="images/oauth-outsystems-gettoken-flow.png" alt="OutSystems server action flow calling GetAccessToken and assigning the response to a Token structure">
+
+    <p>The calling flow is a straightforward Preparation on the callback page: read the authorization code LinkedIn appended to the URL, hand it to <code>OAuth_GetToken</code>, store the resulting access token in the session, and then use it to fetch whatever data the app needs — a basic profile, a photo — before moving on to the actual feature, such as a "share post" page.</p>
+
+    <img src="images/oauth-outsystems-callback-preparation.png" alt="OutSystems Preparation flow on the callback page: set authorization code, handle callback, get token, set LinkedIn access data, then fetch profile and photo">
+    <p>On the REST consumer side, an <code>OnBeforeRequest</code> handler on the Linkedin_API REST entity sets the <code>Authorization</code> header on every outgoing call:</p>
+    <pre><code>HTTP_header.Name  = "Authorization"
+HTTP_header.Value = "Bearer " + Session.LinkedInAccess.AccessToken</code></pre>
+    <p>together with an <code>x-li-format: json</code> header, since LinkedIn's API also accepts XML and needs to be told which format to return.</p>
+
+    <img src="images/oauth-outsystems-authorization-header.png" alt="OutSystems REST entity OnBeforeRequest handler setting the Authorization and x-li-format headers on every LinkedIn API call">
+
+    <h2>Where it's worth using OAuth 2.0</h2>
+    <ul>
+      <li><strong>Social login</strong> — letting users authenticate through an identity provider they already trust, without the app ever seeing a password.</li>
+      <li><strong>Posting or acting on the user's behalf</strong> — publishing content, sharing updates, or performing actions on a third-party platform, as with the LinkedIn job-posting case here.</li>
+      <li><strong>Scoped, revocable access</strong> — since permissions are explicit and grants can be revoked by the user at any time from the provider's own settings, without the app needing to be involved.</li>
+    </ul>
+
+    <h2>Closing thoughts</h2>
+    <p>OAuth 2.0's value is easy to undersell because most people only ever see its login button. Underneath, it's solving a more specific problem: giving an application a scoped, revocable, password-free way to act on a user's behalf — a distinction that becomes obvious the moment an integration needs to do more than just confirm who someone is, like posting a job announcement to LinkedIn without ever touching a LinkedIn password.</p>
+
+    <p class="post-meta" style="margin-top:32px;">This article is adapted from a talk originally given at Noesis in March 2019.</p>
+
+  </main>
+
+  <footer class="site-footer">
+    <span>© 2025 Ricardo Cruz</span>
+    <a href="../index.html#articles" class="back-link" style="margin-top:0;">&larr; more articles</a>
+  </footer>
+
+</div>
+
+</body>
+</html>
