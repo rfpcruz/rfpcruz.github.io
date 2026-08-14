@@ -14,4 +14,10 @@ const ARTICLES = [
     date: "2020-06-03",
     url: "https://medium.com/noesis-low-code-solutions/outsystems-ai-chatbot-with-azure-bot-framework-a2f6176d288d"
   },
+  {
+    title: "OAuth 2.0 in Practice: Delegated Access and a LinkedIn Integration",
+    date: "2019-03-03",
+    url: "articles/oauth2-in-practice"
+  },
+  
 ];
