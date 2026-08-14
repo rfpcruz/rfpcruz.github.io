@@ -1,5 +1,12 @@
 const ARTICLES = [
   {
+    title: "Beyond the Hype: An Architectural Breakdown of Modern AI Systems",
+    date: "2026-07-16",
+    url: "articles/beyond-the-hype-ai-architecture.html"
+  },
+  
+  
+  {
     title: "ETags in Action: Definition, Benefits, and Application",
     date: "2025-01-15",
     url: "articles/etags-in-action.html"
