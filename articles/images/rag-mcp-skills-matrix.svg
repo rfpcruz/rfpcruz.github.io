@@ -1,0 +1,36 @@
+<svg viewBox="0 0 800 300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+  <rect x="0" y="0" width="800" height="300" fill="transparent"/>
+  <text x="400" y="32" text-anchor="middle" fill="#e6edf3" font-size="15" font-weight="700">Knowledge · Access · Capability</text>
+
+  <!-- RAG -->
+  <rect x="40" y="70" width="220" height="160" rx="6" fill="#0d1117" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="150" y="100" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="700">RAG</text>
+  <text x="150" y="118" text-anchor="middle" fill="#8b949e" font-size="9">Knowledge Layer</text>
+  <line x1="60" y1="132" x2="240" y2="132" stroke="#30363d" stroke-width="1"/>
+  <text x="150" y="155" text-anchor="middle" fill="#e6edf3" font-size="10">retrieves relevant</text>
+  <text x="150" y="170" text-anchor="middle" fill="#e6edf3" font-size="10">context before</text>
+  <text x="150" y="185" text-anchor="middle" fill="#e6edf3" font-size="10">answering</text>
+  <text x="150" y="212" text-anchor="middle" fill="#f97316" font-size="11" font-weight="700">gives: Knowledge</text>
+
+  <!-- MCP -->
+  <rect x="290" y="70" width="220" height="160" rx="6" fill="#0d1117" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="400" y="100" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="700">MCP</text>
+  <text x="400" y="118" text-anchor="middle" fill="#8b949e" font-size="9">Integration Layer</text>
+  <line x1="310" y1="132" x2="490" y2="132" stroke="#30363d" stroke-width="1"/>
+  <text x="400" y="155" text-anchor="middle" fill="#e6edf3" font-size="10">connects to systems</text>
+  <text x="400" y="170" text-anchor="middle" fill="#e6edf3" font-size="10">via a standard</text>
+  <text x="400" y="185" text-anchor="middle" fill="#e6edf3" font-size="10">protocol</text>
+  <text x="400" y="212" text-anchor="middle" fill="#f97316" font-size="11" font-weight="700">gives: Access</text>
+
+  <!-- Skills -->
+  <rect x="540" y="70" width="220" height="160" rx="6" fill="#0d1117" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="650" y="100" text-anchor="middle" fill="#38bdf8" font-size="12" font-weight="700">Agent Skills</text>
+  <text x="650" y="118" text-anchor="middle" fill="#8b949e" font-size="9">Execution Layer</text>
+  <line x1="560" y1="132" x2="740" y2="132" stroke="#30363d" stroke-width="1"/>
+  <text x="650" y="155" text-anchor="middle" fill="#e6edf3" font-size="10">performs structured,</text>
+  <text x="650" y="170" text-anchor="middle" fill="#e6edf3" font-size="10">repeatable</text>
+  <text x="650" y="185" text-anchor="middle" fill="#e6edf3" font-size="10">workflows</text>
+  <text x="650" y="212" text-anchor="middle" fill="#f97316" font-size="11" font-weight="700">gives: Capability</text>
+
+  <text x="400" y="270" text-anchor="middle" fill="#8b949e" font-size="10">a production system orchestrates all three — none replaces the others</text>
+</svg>
