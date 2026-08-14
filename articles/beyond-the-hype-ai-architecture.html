@@ -165,6 +165,8 @@
 
     <p>Let's break down the anatomy of a modern AI system, looking past the hype and focusing on the low-level mechanics and engineering trade-offs of each component.</p>
 
+    <img src="images/ai-architecture-overview.svg" alt="Overview diagram mapping a modern AI system to a human analogy: LLM as the Brain, RAG as Memory, Agents as Hands, and MCP as the Nervous System">
+
     <h2>1. The LLM (The Brain) — Static Intelligence</h2>
     <p>In any modern AI system, the <strong>LLM acts as "The Brain"</strong> — the core intelligence layer responsible for reasoning and text generation, trained on massive historical datasets.</p>
     <p>However, to architect systems around it, we must understand exactly what this "brain" is under the hood.</p>
@@ -180,6 +182,8 @@
       <li><strong>Hallucinations</strong> — when an LLM encounters a gap in its knowledge, it doesn't return a <code>404 Not Found</code>. Because its fundamental mandate is to predict the next logical token, it will mathematically generate text that <em>sounds</em> perfectly plausible but is factually incorrect. It optimizes for linguistic coherence, not factual accuracy.</li>
     </ul>
 
+    <img src="images/llm-frozen-weights-cache.svg" alt="Diagram of an LLM as a frozen, read-only cache of mathematical weights, with a training cutoff date and no awareness of events after it">
+
     <h2>2. RAG (Brain + Memory) — Injected Context</h2>
     <p>To solve the limitations of static intelligence without spending millions of dollars re-training or fine-tuning a model, we use <strong>Retrieval-Augmented Generation (RAG)</strong>. If the LLM is a brilliant brain taking an exam, RAG is the act of handing that brain an open textbook containing the exact information it needs right before it answers.</p>
 
@@ -192,12 +196,16 @@
       <li><strong>Semantic search</strong> — when a user asks a question, their query is also converted into a vector. Your system performs a similarity search (like Cosine Distance) against the Vector DB to find the chunks of data closest in meaning to the user's request.</li>
     </ol>
 
+    <img src="images/rag-pipeline-diagram.svg" alt="RAG pipeline diagram: documents chunked and embedded into a vector database, a user query converted to a vector, and a similarity search returning the closest matching chunks">
+
     <h2>3. AI Agents (Brain + Hands) — Autonomous Action</h2>
     <p>While RAG makes the system factually accurate, it is still passive — it only responds to static inputs. To build truly disruptive applications, the system needs the ability to execute tasks. This introduces <strong>AI Agents</strong>, which represent the "Hands" of the system.</p>
 
     <h3>The low-level reality</h3>
     <p>An AI Agent shifts the paradigm from simple question-answering to autonomous execution. It achieves this by utilizing a design pattern known as the <strong>ReAct (Reasoning and Acting) loop</strong>.</p>
     <p>Instead of generating a final answer immediately, the LLM is prompted to output its "Thought," define an "Action" (calling an external tool), and wait for the "Observation" (the result of that tool).</p>
+
+    <img src="images/react-loop-diagram.svg" alt="ReAct loop diagram showing the LLM cycling through Thought, Action and Observation steps until it produces a final answer">
 
     <h3>The engineering trade-offs</h3>
     <p>While highly powerful, Agents introduce massive challenges that Tech Leads must carefully architect for:</p>
@@ -212,6 +220,8 @@
     <h3>The low-level reality</h3>
     <p>Launched open-source by Anthropic, <strong>MCP is an open, standardized architectural protocol</strong> — built on top of JSON-RPC 2.0 — that establishes a secure client-server relationship between LLM applications and data sources.</p>
     <p>Think of MCP exactly how a SysAdmin views <strong>REST, gRPC, or POSIX standards</strong>. Before MCP, if you wanted an AI agent to read a database, check a GitHub repository, or parse local logs, you had to write a bespoke, fragile API connector for each specific use case.</p>
+
+    <img src="images/mcp-client-server-architecture.svg" alt="MCP architecture diagram showing an LLM application as an MCP client connecting through a standardized protocol to multiple MCP servers exposing databases, repositories and file systems">
 
     <h2>The Architectural Matrix: Knowledge vs. Access vs. Capability</h2>
     <p>When designing enterprise AI, you will often hear RAG, MCP, and Agent Skills mentioned in the same breath. However, as architects, we must avoid treating them as interchangeable buzzwords. They solve fundamentally different engineering problems, and understanding where each belongs in your stack is critical.</p>
@@ -232,6 +242,8 @@
         <tr><td>Execution</td><td>Agent Skills</td><td>Performs structured, repeatable workflows</td><td><strong>Capability</strong></td></tr>
       </tbody>
     </table>
+
+    <img src="images/rag-mcp-skills-matrix.svg" alt="Matrix diagram mapping RAG, MCP and Agent Skills to the Knowledge, Access and Capability layers of an enterprise AI agent">
 
     <p>The real architectural value is not in choosing one over the other. A robust, production-ready system orchestrates all three: <strong>RAG retrieves the right information, MCP connects to the right systems, and Skills execute the right actions.</strong></p>
 
