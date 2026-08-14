@@ -157,79 +157,85 @@
 
   <main class="post-body">
 
-    <p class="lede">If you spend any time on tech LinkedIn or X, you have likely seen a flood of content reducing Artificial Intelligence to "vibe coding" or writing clever prompts. But as software engineers, systems architects, and Tech Leads, we know that sending a string to a black-box API is not how you build scalable, production-ready enterprise applications.</p>
+    <p class="lede">If you spend time on tech LinkedIn or X, you have likely seen a set of content reducing Artificial Intelligence to "vibe coding" or writing clever prompts. However, as software engineers, systems architects or Tech Leads, we know that sending a string to a black-box API is not how you should build scalable, production-ready enterprise applications.</p>
 
-    <p>A standalone Large Language Model (LLM) cannot solve complex enterprise problems. It doesn't have access to your live databases, it doesn't know your business logic, it has zero state persistence, and it cannot execute actions.</p>
+    <p>A standalone LLM (Large Language Model) can’t sort out complex enterprise problems. It doesn't have access to our live databases, it doesn't know our business logic. It has no state persistence and it can’t execute actions.</p>
 
-    <p>To build real value, we need to look past the foundational model and focus on the <strong>system architecture</strong> surrounding it. To make sense of this rapidly evolving ecosystem, it helps to map a complete, enterprise-grade AI system to a human analogy: an intelligent core (the Brain), a contextual memory layer (Books), an execution loop (Hands), and a standardized communication framework (the Nervous System).</p>
+    <p>To deliver real value, we need to look beyond the foundational model and focus on the system architecture that surrounds it. To make sense of this rapidly evolving ecosystem, it’s good to map a complete, enterprise-grade AI system to a human analogy: an intelligent core (the Brain), a contextual memory layer (Books), an execution loop (Hands), and a standardised communication framework (the Nervous System).</p>
 
-    <p>Let's break down the anatomy of a modern AI system, looking past the hype and focusing on the low-level mechanics and engineering trade-offs of each component.</p>
+    <p>Let's break down the anatomy of a modern AI system, focusing on the low-level mechanics and engineering trade-offs involved in each component.</p>
 
     <img src="images/ai-architecture-overview.svg" alt="Overview diagram mapping a modern AI system to a human analogy: LLM as the Brain, RAG as Memory, Agents as Hands, and MCP as the Nervous System">
 
     <h2>1. The LLM (The Brain) — Static Intelligence</h2>
-    <p>In any modern AI system, the <strong>LLM acts as "The Brain"</strong> — the core intelligence layer responsible for reasoning and text generation, trained on massive historical datasets.</p>
-    <p>However, to architect systems around it, we must understand exactly what this "brain" is under the hood.</p>
+    <p>In any modern AI system, the LLM acts as "The Brain", in other words, the core intelligence layer that is responsible for reasoning and text generation, trained on massive historical datasets.</p>
+
+    <p>However, to architect systems around it, t is essential that we understand what this "brain" is under the hood.</p>
 
     <h3>The low-level reality</h3>
-    <p>An LLM does not "think," nor does it possess a database of facts inside its neural network. At its core, an LLM is a massive, frozen file of mathematical weights. When you send a prompt to a model, you are passing data through a complex mathematical function (the Transformer architecture) that calculates a probability distribution to predict the next most likely word token.</p>
-    <p>From a systems engineering or SysAdmin perspective, you should treat a raw LLM like a <strong>massive, read-only cache</strong> that was completely frozen on the day training was completed.</p>
+    <p>An LLM doesn’t "think," nor its neural network contain a database of facts inside, because at its core, an LLM is a massive, frozen file of mathematical weights. When you submit some prompts to a model, you are passing data through a complex mathematical function that calculates a probability distribution to predict the next most likely word token.</p>
+
+    <p>From a systems engineering, you should think a raw LLM like a read-only, massive, cache that was completely frozen on the day training was completed.</p>
 
     <h3>The architectural limitations</h3>
-    <p>Because the model is a static snapshot of past data, it introduces two distinct architectural challenges:</p>
+    <p>The model is a static snapshot of past data, so it introduces two distinct architectural challenges:</p>
     <ul>
-      <li><strong>No live data</strong> — if a model's training data cut off six months ago, it has zero awareness of anything that happened yesterday, let alone a real-time bank transaction or a user's current session state.</li>
-      <li><strong>Hallucinations</strong> — when an LLM encounters a gap in its knowledge, it doesn't return a <code>404 Not Found</code>. Because its fundamental mandate is to predict the next logical token, it will mathematically generate text that <em>sounds</em> perfectly plausible but is factually incorrect. It optimizes for linguistic coherence, not factual accuracy.</li>
+      <li><strong>No live data</strong> — if a model's training data cut off six months ago, it is not aware of anything that happened yesterday.</li>
+      <li><strong>Hallucinations</strong> — when an LLM has a gap in its knowledge, it does not return a 404 Not Found because its fmain role is to predict the next logical token, it will mathematically generate text that sounds perfectly plausible but is simply wrong. It optimizes for linguistic coherence rather then factual accuracy.</li>
     </ul>
 
     <img src="images/llm-frozen-weights-cache.svg" alt="Diagram of an LLM as a frozen, read-only cache of mathematical weights, with a training cutoff date and no awareness of events after it">
 
     <h2>2. RAG (Brain + Memory) — Injected Context</h2>
-    <p>To solve the limitations of static intelligence without spending millions of dollars re-training or fine-tuning a model, we use <strong>Retrieval-Augmented Generation (RAG)</strong>. If the LLM is a brilliant brain taking an exam, RAG is the act of handing that brain an open textbook containing the exact information it needs right before it answers.</p>
+    <p>In order to solve the limitations of static intelligence without spending millions of dollars re-training or fine-tuning a model, we use Retrieval-Augmented Generation (RAG). If we think of an LLM as a brilliant student taking an exam, RAG is the act of handing that brain an open textbook containing the exact information it needs right before it answers.</p>
 
     <h3>The low-level reality</h3>
-    <p>RAG introduces a data ingestion and retrieval pipeline into your architecture. Instead of expecting the LLM to know the answer, your application fetches the relevant context from your private data sources <em>first</em>, and then passes both the context and the user query to the LLM.</p>
-    <p>As an engineer, you need to understand the underlying mechanics of this pipeline:</p>
+    <p>RAG adds a data ingestion and retrieval pipeline to your architecture. Instead of depending on the LLM to know the answer, your application first gets the relevant information from your private data sources. It then sends both that context and the user’s query to the LLM.</p>
+
+    <p>As an engineer, you need to understand how it works under the hood:</p>
     <ol>
-      <li><strong>Embeddings</strong> — your unstructured enterprise data (PDFs, documentation, database rows) is broken down into chunks and passed through an embedding model. This model converts text into a high-dimensional vector (a string of numbers) that represents its mathematical <em>semantic meaning</em>.</li>
-      <li><strong>Vector databases</strong> — these vectors are stored in specialized databases (e.g., pgvector, Chroma, Pinecone).</li>
-      <li><strong>Semantic search</strong> — when a user asks a question, their query is also converted into a vector. Your system performs a similarity search (like Cosine Distance) against the Vector DB to find the chunks of data closest in meaning to the user's request.</li>
+      <li><strong>Embeddings</strong> — Unstructured enterprise data, such as PDFs, documents or database records, is split into smaller chunks and then processed by embedding models; these models convert each chunk into a high-dimensional vector (a string of numbers) to represent its meaning.</li>
+      <li><strong>Vector databases</strong> — Vectors are persisted in databases that are focused on performanceand efficiency (e.g., Pinecone, Chroma).</li>
+      <li><strong>Semantic search</strong> — Query vectorization is done through a vector database, and your system performs a Similarity search (e.g. using the Cosine Distance) in the Vector Databsae to determine the data that is closest in meaning to what the user is asking.</li>
     </ol>
 
     <img src="images/rag-pipeline-diagram.svg" alt="RAG pipeline diagram: documents chunked and embedded into a vector database, a user query converted to a vector, and a similarity search returning the closest matching chunks">
 
     <h2>3. AI Agents (Brain + Hands) — Autonomous Action</h2>
-    <p>While RAG makes the system factually accurate, it is still passive — it only responds to static inputs. To build truly disruptive applications, the system needs the ability to execute tasks. This introduces <strong>AI Agents</strong>, which represent the "Hands" of the system.</p>
+    <p>While RAG makes the system factually accurate, it is still passive because it only answers static inputs. If you want to build truly disruptive applications, the system needs to have the ability to execute tasks. With that, we introduce AI Agents, which represent the "Hands" of the system.</p>
 
     <h3>The low-level reality</h3>
-    <p>An AI Agent shifts the paradigm from simple question-answering to autonomous execution. It achieves this by utilizing a design pattern known as the <strong>ReAct (Reasoning and Acting) loop</strong>.</p>
-    <p>Instead of generating a final answer immediately, the LLM is prompted to output its "Thought," define an "Action" (calling an external tool), and wait for the "Observation" (the result of that tool).</p>
+    <p>AI Agents take things a step further, moving beyond simply answering questions to actually carrying out tasks on their own. It achieves this by utilising a design pattern known as the ReAct (Reasoning and Acting) loop.</p>
+
+    <p>Rather than giving an answer straight away, the LLM is prompted to output its "Thought," define an "Action" (calling an external tool), and wait for the "Observation" (the result of that tool).</p>
 
     <img src="images/react-loop-diagram.svg" alt="ReAct loop diagram showing the LLM cycling through Thought, Action and Observation steps until it produces a final answer">
 
     <h3>The engineering trade-offs</h3>
-    <p>While highly powerful, Agents introduce massive challenges that Tech Leads must carefully architect for:</p>
+    <p>While agents are very incredible and powerful whey introduce massive challenges that Tech Leads must carefully architect for:</p>
     <ul>
-      <li><strong>Latency</strong> — a single user request might trigger 4 or 5 internal reasoning loops. If each LLM API call takes 1.5 seconds, your user is now waiting nearly 10 seconds for a response.</li>
-      <li><strong>Compounding token costs</strong> — you must pass the entire conversation history, thoughts, and tool outputs back into the LLM on <em>every single turn</em> of the loop, making token consumption grow exponentially.</li>
+      <li><strong>Latency</strong> — a single user request can trigger 4 or 5 internal reasoning loops. If every LLM API call takes 1.5 seconds, the user could end up waiting 10 seconds for a response.</li>
+      <li><strong>Compounding token costs</strong> — you need to pass the entire conversation history, thoughts, and tool outputs back to the LLM on every single turn of the loop and that makes token consumption grow quickly.</li>
     </ul>
 
     <h2>4. MCP (The Nervous System) — The Standardized Communication Protocol</h2>
-    <p>If the LLM is the brain, RAG is the memory, and Agents are the hands, how do they all securely communicate with your enterprise infrastructure? This is where the industry has historically struggled, and it is where the concept of the <strong>Model Context Protocol (MCP)</strong> enters as the "Nervous System."</p>
+    <p>If the LLM is the brain, RAG is the memory, and Agents are the hands, how do we securely connect them to the enterprise infrastructure? This has long been a challenge for the industry, and it is where the concept of the Model Context Protocol (MCP) is introduced as the "Nervous System."</p>
 
     <h3>The low-level reality</h3>
-    <p>Launched open-source by Anthropic, <strong>MCP is an open, standardized architectural protocol</strong> — built on top of JSON-RPC 2.0 — that establishes a secure client-server relationship between LLM applications and data sources.</p>
-    <p>Think of MCP exactly how a SysAdmin views <strong>REST, gRPC, or POSIX standards</strong>. Before MCP, if you wanted an AI agent to read a database, check a GitHub repository, or parse local logs, you had to write a bespoke, fragile API connector for each specific use case.</p>
+    <p>Originally open-sourced by Anthropic, MCP is an open, standardised architectural protocol built on top of JSON-RPC 2.0, and it establishes a secure client-server relationship between LLM applications and data sources.</p>
+
+    <p>We can think of MCP exactly as a SysAdmin views REST or POSIX standards. Before MCP, if you wanted an AI agent to access a database, check a GitHub repository, or parse local logs, you had to write a custom, fragile API connector for each specific use case.</p>
 
     <img src="images/mcp-client-server-architecture.svg" alt="MCP architecture diagram showing an LLM application as an MCP client connecting through a standardized protocol to multiple MCP servers exposing databases, repositories and file systems">
 
     <h2>The Architectural Matrix: Knowledge vs. Access vs. Capability</h2>
-    <p>When designing enterprise AI, you will often hear RAG, MCP, and Agent Skills mentioned in the same breath. However, as architects, we must avoid treating them as interchangeable buzzwords. They solve fundamentally different engineering problems, and understanding where each belongs in your stack is critical.</p>
-    <p>To design an agent that moves beyond a basic chat interface and actually executes enterprise workflows, you need to map them to three distinct layers:</p>
+    <p>When designing enterprise AI systems, you’ll often hear RAG, MCP, and Agent Skills discussed together. But as architects, we must avoid using them as interchangeable buzzwords because they solve fundamentally different engineering problems. Understanding where each belongs in your stack is critical.</p>
+
+    <p>To design an agent that goes beyond a basic chat interface and actually executes enterprise workflows, you need to map them to these three distinct layers:</p>
     <ul>
-      <li><strong>RAG (The Knowledge Layer)</strong> — gives the agent <em>knowledge</em>. It resolves the problem of finding the right context and grounding responses in trusted data to eliminate hallucinations.</li>
-      <li><strong>MCP (The Integration Layer)</strong> — gives the agent <em>access</em>. It resolves the problem of connectivity, replacing fragile, custom-built API integrations with a secure, standardized protocol.</li>
-      <li><strong>Agent Skills (The Execution Layer)</strong> — gives the agent <em>capability</em>. This is the runtime configuration — the predefined prompts, specific tools, and structured workflows that allow an agent to perform repeatable, reliable actions.</li>
+      <li><strong>RAG (The Knowledge Layer)</strong> — gives the agent <em>knowledge</em>. It solves the problem of finding the right context and grounding responses in trusted data, helping to reduce hallucinations.</li>
+      <li><strong>MCP (The Integration Layer)</strong> — gives the agent <em>access</em>. It resolves the connectivity problem by replacing fragile, custom-built API integrations with a secure and standardised protocol.</li>
+      <li><strong>Agent Skills (The Execution Layer)</strong> — gives the agent <em>capability</em>. It is the runtime configuration: the prompts, specific tools, and structured workflows that an agent needs to carry out repeatable, reliable actions.</li>
     </ul>
 
     <table>
@@ -245,13 +251,12 @@
 
     <img src="images/rag-mcp-skills-matrix.svg" alt="Matrix diagram mapping RAG, MCP and Agent Skills to the Knowledge, Access and Capability layers of an enterprise AI agent">
 
-    <p>The real architectural value is not in choosing one over the other. A robust, production-ready system orchestrates all three: <strong>RAG retrieves the right information, MCP connects to the right systems, and Skills execute the right actions.</strong></p>
+    <p>The real architectural value comes from understanding how they work together. A robust, production-ready system orchestrates all three: RAG finds the correct information, MCP connects the agent to the right systems, and Skills handle the right actions.</p>
 
     <h2>Conclusion: Engineering the Future of AI</h2>
-    <p>Building enterprise-grade AI is not about writing a lucky prompt. It is about <strong>systems engineering</strong>. We must manage the static limitations of the <strong>LLM</strong>, architect efficient retrieval pipelines with <strong>RAG</strong>, monitor the compounding latency of <strong>Agents</strong>, and enforce standardized communication through protocols like <strong>MCP</strong>.</p>
-    <p>Once we control the architecture, the next major challenge is ensuring that our development workflows scale. How do we ensure that agents build exactly what we want without spinning into chaotic code generation?</p>
-    <p>In my next article, I will dive into <strong>Spec-Driven Development (SDD)</strong> — the engineering methodology that leverages precise software specifications to move AI coding from an unpredictable guessing game into an automated, highly disciplined assembly line.</p>
-    <p>Stay tuned, and let's keep engineering.</p>
+    <p>Building enterprise-grade AI is not just about writing a perfect and/or lucky prompt. It is all about systems engineering, and we need to understand and work within the LLM’s inherent limitations, design the most efficient possible retrieval pipelines with RAG, manage the latency that can be introduced by the Agents, and establish consistent communication through protocols like MCP.</p>
+
+    <p>Once we have the architecture under our control, the next challenge is making sure that our development workflows can scale. How do we ensure that agents consistently produce what we need without spinning into chaotic code generation?</p>
 
   </main>
 
