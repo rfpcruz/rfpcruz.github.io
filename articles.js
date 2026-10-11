@@ -1,5 +1,12 @@
 const ARTICLES = [
   {
+    title: "MCP Under the Hood: The Standardized Layer Between Agents and Your APIs",
+    date: "2026-10-11",
+    url: "articles/mcp-under-the-hood.html"
+  },
+
+  
+  {
     title: "Beyond the Hype: An Architectural Breakdown of Modern AI Systems",
     date: "2026-07-16",
     url: "articles/beyond-the-hype-ai-architecture.html"
