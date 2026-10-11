@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCP Under the Hood: The Standardized Layer Between Agents and Your APIs — Ricardo Cruz</title>
+<meta name="description" content="MCP does not replace your API. A systems-engineering look at the Model Context Protocol: JSON-RPC under the hood, MCP vs. API paths side by side, and the engineering trade-offs of putting a discovery layer in front of your APIs.">
+<meta property="article:published_time" content="2026-10-11">
+<meta property="article:author" content="Ricardo Cruz">
+<meta property="og:title" content="MCP Under the Hood: The Standardized Layer Between Agents and Your APIs">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://rfpcruz.github.io/articles/mcp-under-the-hood.html">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<style>
+  .article-page { max-width: 720px; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-decoration: none;
+    margin-top: 40px;
+  }
+  .back-link:hover { color: var(--accent); }
+
+  .post-header { padding: 24px 0 32px; border-bottom: 1px solid var(--line); }
+  .post-header h1 {
+    font-family: var(--mono);
+    font-size: 1.7rem;
+    line-height: 1.3;
+    margin: 12px 0 0;
+  }
+  .post-meta {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin-top: 14px;
+  }
+  .post-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 3px 8px;
+    margin-top: 16px;
+    margin-right: 6px;
+  }
+
+  .post-body { padding: 40px 0 80px; }
+  .post-body h2 {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    margin: 48px 0 16px;
+    color: var(--text);
+  }
+  .post-body h2:first-child { margin-top: 0; }
+  .post-body h3 {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    color: var(--accent);
+    margin: 28px 0 10px;
+  }
+  .post-body p { margin: 0 0 16px; }
+  .post-body ul, .post-body ol { margin: 0 0 16px; padding-left: 22px; }
+  .post-body li { margin-bottom: 8px; }
+  .post-body strong { color: var(--text); }
+
+  .lede { font-size: 1.05rem; color: var(--muted); }
+
+  pre {
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 0 0 20px;
+  }
+  code { font-family: var(--mono); font-size: 0.85rem; }
+  :not(pre) > code {
+    background: var(--bg-alt);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--line);
+  }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    padding: 4px 0 4px 16px;
+    color: var(--muted);
+    margin: 0 0 20px;
+  }
+
+  .img-placeholder {
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    padding: 48px 20px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin: 0 0 24px;
+  }
+
+  .post-body img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin: 0 0 24px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 20px;
+    font-size: 0.92rem;
+  }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  th {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+</style>
+</head>
+<body>
+
+<div class="stripe" aria-hidden="true"></div>
+
+<div class="wrap article-page">
+
+  <a href="../index.html#articles" class="back-link">&larr; back to articles</a>
+
+  <header class="post-header">
+    <p class="post-meta">11 October 2026 · ~6 min read</p>
+    <h1>MCP Under the Hood: The Standardized Layer Between Agents and Your APIs</h1>
+    <p class="post-meta">by Ricardo Cruz</p>
+    <span class="post-tag">MCP</span>
+    <span class="post-tag">API</span>
+    <span class="post-tag">AI</span>
+    <span class="post-tag">Architecture</span>
+  </header>
+
+  <main class="post-body">
+
+    <p class="lede">If you scroll through tech LinkedIn or X long enough, you'll eventually see a post claiming that the Model Context Protocol (MCP) "replaces the API," or that it's a sort of new backend paradigm. As engineers, it's worth being clear about what's really going on under the hood, because the two are solving different problems at different layers of the stack, and mixing them leads to bad architectural decisions.</p>
+
+    <p>MCP does not replace your API, because behind every MCP server there is still a regular API being called. What MCP changes is how a model discovers and decides which endpoint to call, and not what the endpoint does or how it's implemented.</p>
+
+    <img src="images/mcp-under-the-hood-overview.svg" alt="Diagram comparing the MCP path (agent, MCP server, tool discovery, tool call) with the traditional API path (app, gateway), both ending at the same underlying API / service">
+
+    <h2>1. What MCP actually is</h2>
+    <p>Originally released by Anthropic, MCP is an open protocol built on top of JSON-RPC 2.0. It defines a client-server relationship between an AI application (the <em>host</em>, e.g. Claude, an IDE, a custom agent) and an MCP server that exposes a set of capabilities: <strong>tools</strong> (functions the model can call), <strong>resources</strong> (data the model can read), and <strong>prompts</strong> (reusable templates).</p>
+
+    <h3>The low-level reality</h3>
+    <p>An MCP server doesn't introduce new backend logic. Its purpose is to describe, in a machine-readable format, what's available and how to use it, so that an agent can reason about which capability to invoke for a given task, without a developer having to hard-code that mapping.</p>
+
+    <p>A basic tool description might look something like this:</p>
+
+<pre><code>{
+  "name": "get_weather",
+  "description": "Returns current weather for a given city",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "city": { "type": "string" }
+    },
+    "required": ["city"]
+  }
+}</code></pre>
+
+    <p>When the agent decides to use it, the host sends a JSON-RPC call such as:</p>
+
+<pre><code>{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "get_weather",
+    "arguments": { "city": "Lisbon" }
+  }
+}</code></pre>
+
+    <p>The MCP server receives that call, translates it into the format expected by the underlying system (a REST request, a SQL query or a CLI command), executes it, and returns the result in a standard JSON-RPC response. From the model's perspective, every capability looks the same: a named tool with a schema. From the server's perspective, it's still just calling the same endpoints your app already uses.</p>
+
+    <p>Transport-wise, MCP servers typically communicate over <strong>stdio</strong> (for local processes) or <strong>Streamable HTTP</strong> (for remote servers), which matters for how you deploy and secure them: a local stdio server inherits the host process's permissions, whereas a remote HTTP server needs its own authentication mechanism.</p>
+
+    <h2>2. MCP vs. API is the wrong comparison</h2>
+    <p>This is the recurring confusion, so it's worth breaking down explicitly, side by side.</p>
+
+    <h3>The traditional API path</h3>
+    <ol>
+      <li>Your app sends a request.</li>
+      <li>A gateway validates the API key and routes it.</li>
+      <li>A service executes the query and returns data.</li>
+      <li>Your app updates the UI with the result.</li>
+    </ol>
+
+    <h3>The MCP path</h3>
+    <ol>
+      <li>An agent receives a task.</li>
+      <li>It asks the MCP server what tools are available (<code>tools/list</code>).</li>
+      <li>The server returns the list of tools with their schemas.</li>
+      <li>The agent decides which tool fits the task.</li>
+      <li>The MCP server translates that decision into a call against the underlying API.</li>
+    </ol>
+
+    <p>Steps 2 and 3 of the API path (the gateway and the service) are exactly what step 5 of the MCP path calls. What MCP adds is a discovery and reasoning layer in front of it, providing a standard way for a model to identify what's callable and how, instead of a developer wiring a bespoke function-calling schema for every tool, for every agent framework, by hand.</p>
+
+    <table>
+      <thead>
+        <tr><th></th><th>Traditional API</th><th>MCP</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Caller</td><td>Application code</td><td>An LLM-based agent</td></tr>
+        <tr><td>Discovery</td><td>Documentation / OpenAPI spec, read by a human</td><td><code>tools/list</code>, read at runtime by the model</td></tr>
+        <tr><td>Contract</td><td>Fixed at development time</td><td>Negotiated at session time</td></tr>
+        <tr><td>Auth</td><td>API keys, OAuth, per-service</td><td>Handled per MCP server, can wrap API keys, OAuth, etc.</td></tr>
+        <tr><td>What it replaces</td><td>Nothing — it's the interface itself</td><td>Custom function-calling glue code per agent/tool pair</td></tr>
+      </tbody>
+    </table>
+
+    <p>That last row is the actual value proposition: if you've ever written a wrapper manually so that an agent framework could call a specific endpoint, and then had to rewrite an equivalent wrapper for a different framework, MCP is the layer that removes that duplication — not the API layer beneath it.</p>
+
+    <h2>3. Engineering trade-offs</h2>
+    <p>Viewing MCP as nothing more than metadata added to an API fails to capture the architectural trade-offs a Tech Lead must account for:</p>
+    <ul>
+      <li><strong>Tool discovery cost</strong> — a naive integration calls <code>tools/list</code> on every session start. With several MCP servers connected, that's several round trips before the agent can even reason about the task, adding latency you don't see in a direct API call.</li>
+      <li><strong>Schema quality is the interface</strong> — the model selects a tool based purely on its name, description, and input schema. A vague description ("does stuff with data") leads directly to wrong tool selection; this is prompt engineering applied to an API contract, and it demands the same level of precision as writing a good OpenAPI spec.</li>
+      <li><strong>Expanded security surface</strong> — an MCP server sitting in front of an API can bundle several backend permissions behind one set of credentials. Scoping what each tool is allowed to do (and auditing what the agent actually called) becomes as important as the authorization layer of the API itself.</li>
+      <li><strong>No behavior guarantee</strong> — MCP standardizes <em>how</em> a tool is described and invoked, not <em>what</em> it does internally. Idempotency, rate limits, and error handling are still entirely up to the underlying API.</li>
+    </ul>
+
+    <h2>Conclusion</h2>
+    <p>MCP is neither a new backend nor an alternative to the API. It's a standardized discovery-and-invocation layer that sits between a model and the systems you already have, replacing the need for custom-built function-calling integrations. Once you understand it that way, the key question stops being "MCP or API?" and becomes "which of my existing APIs are worth describing to an agent, and how well?"</p>
+
+    <p>If you want to explore the topic further, the <a href="https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro">official MCP documentation</a> is the best starting point for building a server or a client from scratch.</p>
+
+  </main>
+
+  <footer class="site-footer">
+    <span>© 2026 Ricardo Cruz</span>
+    <a href="../index.html#articles" class="back-link" style="margin-top:0;">&larr; more articles</a>
+  </footer>
+
+</div>
+
+</body>
+</html>
