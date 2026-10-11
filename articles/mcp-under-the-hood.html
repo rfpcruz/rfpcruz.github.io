@@ -230,19 +230,19 @@
         <tr><td>Discovery</td><td>Documentation / OpenAPI spec, read by a human</td><td><code>tools/list</code>, read at runtime by the model</td></tr>
         <tr><td>Contract</td><td>Fixed at development time</td><td>Negotiated at session time</td></tr>
         <tr><td>Auth</td><td>API keys, OAuth, per-service</td><td>Handled per MCP server, can wrap API keys, OAuth, etc.</td></tr>
-        <tr><td>What it replaces</td><td>Nothing — it's the interface itself</td><td>Custom function-calling glue code per agent/tool pair</td></tr>
+        <tr><td>What it replaces</td><td>Nothing. It's the interface itself</td><td>Custom function-calling glue code per agent/tool pair</td></tr>
       </tbody>
     </table>
 
-    <p>That last row is the actual value proposition: if you've ever written a wrapper manually so that an agent framework could call a specific endpoint, and then had to rewrite an equivalent wrapper for a different framework, MCP is the layer that removes that duplication — not the API layer beneath it.</p>
+    <p>That last row is the actual value proposition: if you've ever written a wrapper manually so that an agent framework could call a specific endpoint, and then had to rewrite an equivalent wrapper for a different framework, MCP is the layer that removes that duplication a not the API layer beneath it.</p>
 
     <h2>3. Engineering trade-offs</h2>
     <p>Viewing MCP as nothing more than metadata added to an API fails to capture the architectural trade-offs a Tech Lead must account for:</p>
     <ul>
-      <li><strong>Tool discovery cost</strong> — a naive integration calls <code>tools/list</code> on every session start. With several MCP servers connected, that's several round trips before the agent can even reason about the task, adding latency you don't see in a direct API call.</li>
-      <li><strong>Schema quality is the interface</strong> — the model selects a tool based purely on its name, description, and input schema. A vague description ("does stuff with data") leads directly to wrong tool selection; this is prompt engineering applied to an API contract, and it demands the same level of precision as writing a good OpenAPI spec.</li>
-      <li><strong>Expanded security surface</strong> — an MCP server sitting in front of an API can bundle several backend permissions behind one set of credentials. Scoping what each tool is allowed to do (and auditing what the agent actually called) becomes as important as the authorization layer of the API itself.</li>
-      <li><strong>No behavior guarantee</strong> — MCP standardizes <em>how</em> a tool is described and invoked, not <em>what</em> it does internally. Idempotency, rate limits, and error handling are still entirely up to the underlying API.</li>
+      <li><strong>Tool discovery cost</strong> : a naive integration calls <code>tools/list</code> on every session start. With several MCP servers connected, that's several round trips before the agent can even reason about the task, adding latency you don't see in a direct API call.</li>
+      <li><strong>Schema quality is the interface</strong> : the model selects a tool based purely on its name, description, and input schema. A vague description ("does stuff with data") leads directly to wrong tool selection; this is prompt engineering applied to an API contract, and it demands the same level of precision as writing a good OpenAPI spec.</li>
+      <li><strong>Expanded security surface</strong> : an MCP server sitting in front of an API can bundle several backend permissions behind one set of credentials. Scoping what each tool is allowed to do (and auditing what the agent actually called) becomes as important as the authorization layer of the API itself.</li>
+      <li><strong>No behavior guarantee</strong> : MCP standardizes <em>how</em> a tool is described and invoked, not <em>what</em> it does internally. Idempotency, rate limits, and error handling are still entirely up to the underlying API.</li>
     </ul>
 
     <h2>Conclusion</h2>
