@@ -164,15 +164,6 @@
     width: 100%; height: 100%;
     border: 0;
   }
-  .video-placeholder {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-family: var(--mono);
-    font-size: 0.85rem;
-    color: var(--dim);
-    text-align: center;
-  }
 
   /* prompt callout */
   .prompt-block {
@@ -476,12 +467,13 @@
 
     <p>The run this walkthrough describes, start to finish:</p>
 
-    <!-- YouTube embed &mdash; replace YOUR_VIDEO_ID with the real ID after uploading -->
     <div class="video-embed">
-      <div class="video-placeholder">
-        &#9654; YouTube video &mdash; replace <code>YOUR_VIDEO_ID</code> in the source
-        <!-- <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" allowfullscreen></iframe> -->
-      </div>
+      <iframe src="https://www.youtube.com/embed/sXbA6KYpiLE"
+              title="MCP in Action: an AI agent editing a live OutSystems 11 module"
+              loading="lazy"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen></iframe>
     </div>
 
   </main>
