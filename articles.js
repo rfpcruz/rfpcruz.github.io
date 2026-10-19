@@ -1,6 +1,6 @@
 const ARTICLES = [
   {
-    title: "MCP in Action: An AI Agent Editing a Live OutSystems 11 Module",
+    title: "MCP in Action: An AI Agent Editing a Live OutSystems 11 App",
     date: "2026-10-18",
     url: "articles/mcp-in-action-outsystems.html"
   },
