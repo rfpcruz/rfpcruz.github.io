@@ -248,15 +248,15 @@
 
     <p class="lede">In <a href="mcp-under-the-hood.html">Part 1</a> we broke down what MCP is under the hood: a standardized protocol layer between AI agents and the tools they use. The natural follow-up: does it actually work in practice? I pointed Claude Code at a live OutSystems 11 module in Service Studio and recorded what happened.</p>
 
-    <p>What follows is the annotated walkthrough. If you would rather watch than read, the <a href="#recording">full recording</a> sits at the end (~5 min).</p>
+    <p>What follows is the annotated walkthrough. If you would rather watch than read, the <a href="#recording">full recording</a> is available at the end (~5 min).</p>
 
 
     <!-- ============================================================ -->
     <h2>1. The setup</h2>
 
-    <p>For this walkthrough I'm using the <strong>ProductCatalog</strong> template, a standard OutSystems 11 Reactive Web sample app that ships with Service Studio. Nothing customized, nothing pre-configured for the demo. Just a template, straight from the New Application dialog.</p>
+    <p>For this walkthrough I'm using the <strong>ProductCatalog</strong> template, a standard OutSystems 11 Reactive Web sample application provided with Service Studio. Nothing was customized, nothing pre-configured for the demo. It's just a template, straight from the New Application dialog.</p>
 
-    <p>OutSystems 11 Service Studio ships with an embedded <strong>MCP server</strong>: a local endpoint that exposes the open module's model through the Model Context Protocol. Claude Code, Anthropic's CLI agent, connects to it over HTTP on localhost and gains access to a catalogue of tools for reading and writing the OML.</p>
+    <p>OutSystems 11 Service Studio(v11.55.91+) comes with an embedded <strong>MCP server</strong>: a local endpoint that exposes the open module's model through the Model Context Protocol. Claude Code, Anthropic's CLI agent, connects to it over HTTP on localhost and gains access to a catalogue of tools for reading and writing the OML.</p>
 
     <!-- Architecture diagram — inline SVG using site CSS variables -->
     <svg viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Architecture: Claude Code connects to Service Studio's MCP server, which reads and writes the OML module" style="margin: 0 0 24px;">
@@ -291,9 +291,9 @@
       <text x="590" y="92" text-anchor="middle" fill="var(--dim)" font-size="10" font-family="var(--mono)">(ProductCatalog)</text>
     </svg>
 
-    <p>The key idea: you describe what you want in natural language. The agent translates that into <strong>Model API</strong> calls (the same programmatic interface Service Studio itself uses to manipulate the module) and sends them through the MCP server. The result is merged back into the open module, as if you had made the changes by hand. No code to write, no files to touch.</p>
+    <p>The key idea is: you describe what you want in natural language and the agent translates that into <strong>Model API</strong> calls (the same programmatic interface Service Studio itself uses to manipulate the module) and sends them through the MCP server. The result is merged back into the open module, as if you had made the changes by your hand. No code to write, no files touched.</p>
 
-    <p>To start a session, three things need to be in place:</p>
+    <p>Three things are required to start a session:</p>
     <ol>
       <li><strong>Service Studio</strong> running with the MCP server enabled and the module open. I opened <em>both</em> modules of the app, <code>ProductCatalog_CS</code> (data and services) and <code>ProductCatalog</code> (UI), because the agent tracks each open module separately, and this feature has to land in both.</li>
       <li><strong>Claude Code</strong> with the Service Studio MCP configured.</li>
@@ -311,19 +311,19 @@
       give me list of all used entities
     </div>
 
-    <p>Claude connected to the MCP server, obtained a session token, and called <code>listApps</code>, which came back with both open modules, <code>ProductCatalog</code> (Reactive Web) and <code>ProductCatalog_CS</code> (Service). It then called <code>getDataModel</code> on each to read every entity, local and referenced.</p>
+    <p>Claude connected to the MCP server, obtained a session token, and called <code>listApps</code>, which came back with both open modules, <code>ProductCatalog</code> (Reactive Web) and <code>ProductCatalog_CS</code>. It then called <code>getDataModel</code> on each to read every entity, local and also referenced.</p>
 
     <img src="images/mcp-in-action-entities-by-module.png" alt="Claude Code terminal listing every entity the app uses, grouped by source module: nine consumed from ProductCatalog_CS, eleven static from OutSystemsUI, four from OutSystemsMaps, nine from (System), and MenuItem and Sort local to ProductCatalog">
 
     <p>The result: a structured breakdown of every entity the app uses, grouped by source module: the 11 business entities from <code>ProductCatalog_CS</code> (<code>Product</code>, <code>ShoppingCart</code>, <code>ProductBrand</code>, etc.), the two local static entities (<code>MenuItem</code>, <code>Sort</code>), plus all the referenced system and UI framework entities. All from a single question, without opening Manage Dependencies.</p>
 
-    <div class="callout">The agent read the live module structure through the protocol (entities, attributes, foreign keys, references) without any file export or manual step.</div>
+    <div class="callout">The agent read the live module structure through the protocol (entities, attributes, FK's, references) without any file export or manual step.</div>
 
 
     <!-- ============================================================ -->
-    <h2>3. One prompt, one user story</h2>
+    <h2>3. One prompt, our user story</h2>
 
-    <p>With the data model understood, I wanted to see what happens if I <em>don't</em> hand the agent a spec. So instead of dictating entities and attribute types, I gave it a user story, the way the work would actually arrive in a sprint:</p>
+    <p>With the data model understood, I wanted to see what happens if I <em>don't</em> hand the agent a spec, so instead of dictating entities and attribute types, I gave it a user story, reflecting how the work would actually arrive in a sprint:</p>
 
     <div class="prompt-block">
       <div class="prompt-label">Prompt</div>
@@ -367,7 +367,7 @@
 
     <p>Every row in that table is the agent's own choice, not mine. The entity name, a 2000-character <code>Text</code> for a comment, <code>Date Time</code> for the date, which attributes are mandatory: all inferred from one sentence of business language and a read of how the module's existing entities are built. Run it again and it might pick slightly differently. One detail I liked: it didn't commit the entity blind. It ran the whole thing once as a <strong>dry run</strong>: the same code, ending in a deliberate exception, which hands back TrueChange's verdict on the in-memory model and saves nothing. Zero validation messages, no silently renamed attributes. Only then did it run for real.</p>
 
-    <p>The relationships are the part I find most telling. <code>ProductId</code> and <code>UserId</code> were never requested. They follow from "for a product" and "who wrote the review", and the <code>User</code> one is a reference to the <code>(System)</code> module, exactly the kind you'd set up through the dropdown in the attribute editor.</p>
+    <p>The relationships are the part I find most interesting. <code>ProductId</code> and <code>UserId</code> were never requested. They follow from "for a product" and "who wrote the review", and the <code>User</code> one is a reference to the <code>(System)</code> module, exactly the kind you'd set up through the dropdown in the attribute editor.</p>
 
     <p>The rating is the better story, though. Instead of adding a plain <code>Integer</code> column, the agent noticed that <code>ProductCatalog_CS</code> already has a <code>ProductRating</code> static entity (<code>Star1</code> to <code>Star5</code>, with a label and a value) and pointed the review at it. Nothing in the prompt said "reuse what's already there". It read the data model first, and found it.</p>
 
@@ -401,7 +401,7 @@
       </table>
     </div>
 
-    <p>The screen is where that dry run earned its keep. The first pass came back with <strong>14 validation errors</strong>, every one the same root cause: the platform had renamed the aggregate. Ask for <code>GetProductReviews</code>, then add a filter that reads like a navigation filter (<code>ProductReview.ProductId = ProductId</code>) and Service Studio renames it <code>GetProductReviewsByProductId</code> for you, exactly as it does when you build one by hand. Every expression written against the name I'd asked for was now pointing at nothing: the table source, all five column expressions, both If conditions, the pagination's <code>TotalCount</code>. The fix was to stop hard-coding the name and read it back off the model after the filter was in place. Second dry run: clean. Nothing had been saved in between, which is the point of probing before you commit.</p>
+    <p>The screen is where that dry run earned its keep. The first pass came back with <strong>14 validation errors</strong>, all from one cause: I had asked for an aggregate named <code>GetProductReviews</code>, and the moment the filter went in, Service Studio renamed it <code>GetProductReviewsByProductId</code>, exactly as it does when you build one by hand. Every expression written against the old name broke. The fix was to read the name back off the model instead of hard-coding it. Second dry run: clean, and nothing had been saved in between.</p>
 
     <p>One more thing this run settled. <em>Within</em> a module the agent chains its edits: each change works on the result of the previous one, and nothing reaches Service Studio until the merge. Whether that merge stops to show you the Compare-and-Merge window or lands silently is <em>your</em> setting, not something the agent picks. For this recording I'd allowed automatic merge and publish, so both merges went straight in. <em>Across</em> modules the chaining doesn't hold. The screen's aggregate consumes an entity from a producer module, and a consumer can only see a producer element that has been <strong>published</strong> &mdash; so the order is forced: merge the entity into <code>ProductCatalog_CS</code>, publish it, and only then build the screen. Two chains, two merges, one per module.</p>
 
@@ -445,7 +445,6 @@
       <li><strong>Publishing is opt-in, twice over.</strong> The agent won't publish unless you ask it to <em>and</em> you've allowed automatic merge and publish in the MCP Server dialog. Otherwise the call comes back <code>blocked</code> and the 1-Click Publish is yours. That one setting has a cost as well as a benefit: with it on the run is unattended, but the merges stop showing you the Compare-and-Merge diff. You trade the review step for the smoother ride.</li>
       <li><strong>Silent renames.</strong> The platform renames things under you. A taken name picks up a numeric suffix (<code>GetProducts2</code>); an aggregate picks up its filter (<code>GetProductReviews</code> becomes <code>GetProductReviewsByProductId</code>). Anything already written against the old name is then dangling &mdash; 14 errors, in this run. Read names back off the model instead of hard-coding them.</li>
       <li><strong>No undo.</strong> There is no "rewind by N saves". The session can be reset to the live module, but nothing finer. The merge step gives you a chance to review before accepting.</li>
-      <li><strong>Stylesheet edits are unreliable.</strong> CSS changes to screens and blocks sometimes don't publish, even though the merge succeeds. Theme-level CSS works reliably.</li>
       <li><strong>Merge depends on your setting.</strong> Whether a merge opens the Compare-and-Merge dialog or auto-accepts is your Service Studio configuration, not something the agent passes or can influence. Either way the call only returns once the merge has resolved.</li>
     </ul>
 
@@ -455,9 +454,9 @@
     <!-- ============================================================ -->
     <h2>Closing thoughts</h2>
 
-    <p>Part 1 asked whether MCP is useful or just another protocol. One user story went in and a working feature came out across two modules, so I'd say it earns its place. What struck me on the recording was how little of the session was about the protocol at all. Once the connection is up you spend your attention on the design decisions and the two or three places the platform does something you didn't ask for.</p>
+    <p>Part 1 asked whether MCP is useful or just another protocol. One user story went in and a working feature came out across two modules, so I'd say it earns its place. Once the connection is up you spend your attention on the design decisions and the two or three places the platform does something you didn't ask for.</p>
 
-    <p>What it changes is where the time goes. Clicking a screen together in Service Studio is an hour I no longer spend; reading back what the agent decided, and catching the aggregate it renamed behind my back, is twenty minutes I now do spend. You still have to know what to ask for and what a correct answer looks like. I'd rather spend the hour that way round.</p>
+    <p>What it changes is where the time goes. Clicking a screen together in Service Studio is an hour I no longer spend; reading back what the agent decided, and catching the aggregate it renamed behind my back, is twenty minutes I now do spend. You still have to know what to ask for and what a correct answer looks like.  Now it’s up to us to decide how to spend that time.</p>
 
     <p>If you want to try it, you'll need Service Studio with the MCP server enabled and <a href="https://claude.com/claude-code">Claude Code</a>. And if you missed it, <a href="mcp-under-the-hood.html">Part 1</a> covers the protocol foundations.</p>
 
