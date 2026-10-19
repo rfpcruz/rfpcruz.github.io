@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCP in Action: An AI Agent Editing a Live OutSystems 11 Module — Ricardo Cruz</title>
+<meta name="description" content="Part 2 of the MCP series — pointing Claude Code at a live OutSystems module in Service Studio, creating entities and screens from natural language prompts.">
+<meta property="article:published_time" content="2026-10-18">
+<meta property="article:author" content="Ricardo Cruz">
+<meta property="og:title" content="MCP in Action: An AI Agent Editing a Live OutSystems 11 Module">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://rfpcruz.github.io/articles/mcp-in-action-outsystems.html">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "MCP in Action: An AI Agent Editing a Live OutSystems 11 Module",
+  "datePublished": "2026-10-18",
+  "author": { "@type": "Person", "name": "Ricardo Cruz" },
+  "mainEntityOfPage": "https://rfpcruz.github.io/articles/mcp-in-action-outsystems.html"
+}
+</script>
+
+<style>
+  .article-page { max-width: 720px; }
+
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-decoration: none;
+    margin-top: 40px;
+  }
+  .back-link:hover { color: var(--accent); }
+
+  .post-header { padding: 24px 0 32px; border-bottom: 1px solid var(--line); }
+  .post-header h1 {
+    font-family: var(--mono);
+    font-size: 1.7rem;
+    line-height: 1.3;
+    margin: 12px 0 0;
+  }
+  .post-meta {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin-top: 14px;
+  }
+  .post-tag {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 3px 8px;
+    margin-top: 16px;
+    margin-right: 6px;
+  }
+
+  .post-body { padding: 40px 0 80px; }
+  .post-body h2 {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+    margin: 48px 0 16px;
+    color: var(--text);
+  }
+  .post-body h2:first-child { margin-top: 0; }
+  .post-body h3 {
+    font-family: var(--mono);
+    font-size: 0.95rem;
+    color: var(--accent);
+    margin: 28px 0 10px;
+  }
+  .post-body p { margin: 0 0 16px; }
+  .post-body ul, .post-body ol { margin: 0 0 16px; padding-left: 22px; }
+  .post-body li { margin-bottom: 8px; }
+  .post-body strong { color: var(--text); }
+
+  .lede { font-size: 1.05rem; color: var(--muted); }
+
+  pre {
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    margin: 0 0 20px;
+  }
+  code { font-family: var(--mono); font-size: 0.85rem; }
+  :not(pre) > code {
+    background: var(--bg-alt);
+    padding: 2px 6px;
+    border-radius: 3px;
+    border: 1px solid var(--line);
+  }
+
+  .callout {
+    border-left: 3px solid var(--accent);
+    padding: 4px 0 4px 16px;
+    color: var(--muted);
+    margin: 0 0 20px;
+  }
+
+  .img-placeholder {
+    border: 1px dashed var(--line);
+    border-radius: 4px;
+    padding: 48px 20px;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--dim);
+    margin: 0 0 24px;
+  }
+
+  .post-body img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    margin: 0 0 24px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 20px;
+    font-size: 0.92rem;
+  }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+  th {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* video embed */
+  .video-embed {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    margin: 0 0 24px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--bg-alt);
+  }
+  .video-embed iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: 0;
+  }
+  .video-placeholder {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--dim);
+    text-align: center;
+  }
+
+  /* prompt callout */
+  .prompt-block {
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin: 0 0 20px;
+    font-family: var(--mono);
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .prompt-block .prompt-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+
+  /* flow steps */
+  .flow-steps {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin: 0 0 24px;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+  }
+  .flow-step {
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 8px 14px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .flow-arrow { color: var(--accent); font-size: 1rem; }
+
+  /* what it built summary */
+  .built-summary {
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 20px 22px;
+    margin: 0 0 24px;
+  }
+  .built-summary h4 {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin: 0 0 12px;
+  }
+  .built-summary table { margin: 0; font-size: 0.88rem; }
+  .built-summary td { padding: 6px 12px; }
+  .built-summary td:first-child { color: var(--muted); white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="stripe" aria-hidden="true"></div>
+
+<div class="wrap article-page">
+
+  <a href="../index.html#articles" class="back-link">&larr; back to articles</a>
+
+  <header class="post-header">
+    <p class="post-meta"><time datetime="2026-10-18">18 October 2026</time> &middot; ~12 min read</p>
+    <h1>MCP in Action: An AI Agent Editing a Live OutSystems 11 Module</h1>
+    <p class="post-meta">by Ricardo Cruz</p>
+    <span class="post-tag">MCP</span>
+    <span class="post-tag">OutSystems</span>
+    <span class="post-tag">AI</span>
+  </header>
+
+  <main class="post-body">
+
+    <p class="lede">In <a href="mcp-under-the-hood.html">Part 1</a> we broke down what MCP is under the hood: a standardized protocol layer between AI agents and the tools they use. The natural follow-up: does it actually work in practice? I pointed Claude Code at a live OutSystems 11 module in Service Studio and recorded what happened.</p>
+
+    <p>What follows is the annotated walkthrough. If you would rather watch than read, the <a href="#recording">full recording</a> sits at the end (~5 min).</p>
+
+
+    <!-- ============================================================ -->
+    <h2>1. The setup</h2>
+
+    <p>For this walkthrough I'm using the <strong>ProductCatalog</strong> template, a standard OutSystems 11 Reactive Web sample app that ships with Service Studio. Nothing customized, nothing pre-configured for the demo. Just a template, straight from the New Application dialog.</p>
+
+    <p>OutSystems 11 Service Studio ships with an embedded <strong>MCP server</strong>: a local endpoint that exposes the open module's model through the Model Context Protocol. Claude Code, Anthropic's CLI agent, connects to it over HTTP on localhost and gains access to a catalogue of tools for reading and writing the OML.</p>
+
+    <!-- Architecture diagram — inline SVG using site CSS variables -->
+    <svg viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Architecture: Claude Code connects to Service Studio's MCP server, which reads and writes the OML module" style="margin: 0 0 24px;">
+      <!-- Claude Code box -->
+      <rect x="10" y="40" width="160" height="80" rx="6" fill="var(--bg-alt)" stroke="var(--line)" stroke-width="1.5"/>
+      <text x="90" y="72" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="600" font-family="var(--mono)">Claude Code</text>
+      <text x="90" y="92" text-anchor="middle" fill="var(--dim)" font-size="10" font-family="var(--mono)">(AI agent)</text>
+
+      <!-- Arrow 1 -->
+      <line x1="170" y1="80" x2="248" y2="80" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="6,4"/>
+      <polygon points="248,75 258,80 248,85" fill="var(--accent)"/>
+      <text x="214" y="70" text-anchor="middle" fill="var(--muted)" font-size="9" font-family="var(--mono)">MCP</text>
+      <text x="214" y="100" text-anchor="middle" fill="var(--dim)" font-size="9" font-family="var(--mono)">(stdio)</text>
+
+      <!-- Service Studio box -->
+      <rect x="260" y="20" width="180" height="120" rx="6" fill="var(--bg-alt)" stroke="var(--line)" stroke-width="1.5"/>
+      <text x="350" y="50" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="600" font-family="var(--mono)">Service Studio</text>
+      <text x="350" y="70" text-anchor="middle" fill="var(--dim)" font-size="10" font-family="var(--mono)">(MCP server)</text>
+      <!-- inner box: Model API sidecar -->
+      <rect x="280" y="82" width="140" height="42" rx="4" fill="var(--bg)" stroke="var(--line)" stroke-width="1"/>
+      <text x="350" y="107" text-anchor="middle" fill="var(--muted)" font-size="9" font-family="var(--mono)">Model API sidecar</text>
+
+      <!-- Arrow 2 -->
+      <line x1="440" y1="80" x2="498" y2="80" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="6,4"/>
+      <polygon points="498,75 508,80 498,85" fill="var(--accent)"/>
+      <text x="474" y="70" text-anchor="middle" fill="var(--muted)" font-size="9" font-family="var(--mono)">reads</text>
+      <text x="474" y="100" text-anchor="middle" fill="var(--dim)" font-size="9" font-family="var(--mono)">writes</text>
+
+      <!-- OML box -->
+      <rect x="510" y="40" width="160" height="80" rx="6" fill="var(--bg-alt)" stroke="var(--line)" stroke-width="1.5"/>
+      <text x="590" y="72" text-anchor="middle" fill="var(--accent)" font-size="12" font-weight="600" font-family="var(--mono)">.oml Module</text>
+      <text x="590" y="92" text-anchor="middle" fill="var(--dim)" font-size="10" font-family="var(--mono)">(ProductCatalog)</text>
+    </svg>
+
+    <p>The key idea: you describe what you want in natural language. The agent translates that into <strong>Model API</strong> calls (the same programmatic interface Service Studio itself uses to manipulate the module) and sends them through the MCP server. The result is merged back into the open module, as if you had made the changes by hand. No code to write, no files to touch.</p>
+
+    <p>To start a session, three things need to be in place:</p>
+    <ol>
+      <li><strong>Service Studio</strong> running with the MCP server enabled and the module open. I opened <em>both</em> modules of the app, <code>ProductCatalog_CS</code> (data and services) and <code>ProductCatalog</code> (UI), because the agent tracks each open module separately, and this feature has to land in both.</li>
+      <li><strong>Claude Code</strong> with the Service Studio MCP configured.</li>
+      <li><strong>User approval</strong>. The MCP server asks you to approve the agent connection before anything happens.</li>
+    </ol>
+
+
+    <!-- ============================================================ -->
+    <h2>2. Reading the module</h2>
+
+    <p>The first thing I asked was simple:</p>
+
+    <div class="prompt-block">
+      <div class="prompt-label">Prompt</div>
+      give me list of all used entities
+    </div>
+
+    <p>Claude connected to the MCP server, obtained a session token, and called <code>listApps</code>, which came back with both open modules, <code>ProductCatalog</code> (Reactive Web) and <code>ProductCatalog_CS</code> (Service). It then called <code>getDataModel</code> on each to read every entity, local and referenced.</p>
+
+    <img src="images/mcp-in-action-entities-by-module.png" alt="Claude Code terminal listing every entity the app uses, grouped by source module: nine consumed from ProductCatalog_CS, eleven static from OutSystemsUI, four from OutSystemsMaps, nine from (System), and MenuItem and Sort local to ProductCatalog">
+
+    <p>The result: a structured breakdown of every entity the app uses, grouped by source module: the 11 business entities from <code>ProductCatalog_CS</code> (<code>Product</code>, <code>ShoppingCart</code>, <code>ProductBrand</code>, etc.), the two local static entities (<code>MenuItem</code>, <code>Sort</code>), plus all the referenced system and UI framework entities. All from a single question, without opening Manage Dependencies.</p>
+
+    <div class="callout">The agent read the live module structure through the protocol (entities, attributes, foreign keys, references) without any file export or manual step.</div>
+
+
+    <!-- ============================================================ -->
+    <h2>3. One prompt, one user story</h2>
+
+    <p>With the data model understood, I wanted to see what happens if I <em>don't</em> hand the agent a spec. So instead of dictating entities and attribute types, I gave it a user story, the way the work would actually arrive in a sprint:</p>
+
+    <div class="prompt-block">
+      <div class="prompt-label">Prompt</div>
+      User story: as a customer, I want to see all reviews for a product, so I can decide what to buy.<br><br>
+      Implement it in the ProductCatalog app, following its architecture: the data model belongs in ProductCatalog_CS, exposed so the UI module can consume it, and the UI belongs in ProductCatalog &mdash; a Reactive screen ProductReviews listing product name, rating, comment, review date and who wrote the review, with pagination. Publish ProductCatalog_CS and refresh references so the screen can use the new entity.
+    </div>
+
+    <p>Two things are specified: the business need with the columns the screen should show, and one architecture rule: data in the service module, UI in the UI module, which is how this app is built and the first thing an OutSystems architect would otherwise ask about. The prompt never names the entity, picks a data type, sets a text length, mentions a foreign key, or says the word aggregate. Everything else is a decision the agent has to make, and they are the decisions you'd make yourself before opening the Data tab.</p>
+
+    <p>And that's where it started. Before touching the module, Claude worked out that a review needs its own entity, that it has to point at a product and at whoever wrote it, and that "rating" and "review date" imply particular data types. Then it translated those decisions into Model API operations, the same ones Service Studio executes when you create an entity through the visual editor. The difference: no dialogs, no property panels.</p>
+
+    <p>Here's what it did, step by step:</p>
+
+    <div class="flow-steps">
+      <span class="flow-step">Read both modules</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Design the feature</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Entity into _CS</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Merge + publish _CS</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Screen into ProductCatalog</span>
+      <span class="flow-arrow">&rarr;</span>
+      <span class="flow-step">Merge</span>
+    </div>
+
+    <p>The data layer came first:</p>
+
+    <div class="built-summary">
+      <h4>What Claude designed</h4>
+      <table>
+        <tr><td>Entity</td><td><strong>ProductReview</strong> in <code>ProductCatalog_CS</code> &middot; Server Entity, auto-number Long Integer Id, Public and Expose Read Only so the UI module can consume it</td></tr>
+        <tr><td>ProductId</td><td>FK to <code>Product</code> &middot; mandatory</td></tr>
+        <tr><td>UserId</td><td>FK to <code>User</code> from (System) &middot; mandatory, "who wrote the review"</td></tr>
+        <tr><td>ProductRatingId</td><td>FK to the app's existing <code>ProductRating</code> static entity &middot; mandatory</td></tr>
+        <tr><td>Comment</td><td>Text, length 2000 &middot; optional, so a star rating on its own is still a valid review</td></tr>
+        <tr><td>ReviewDate</td><td>Date Time &middot; mandatory</td></tr>
+      </table>
+    </div>
+
+    <p>Every row in that table is the agent's own choice, not mine. The entity name, a 2000-character <code>Text</code> for a comment, <code>Date Time</code> for the date, which attributes are mandatory: all inferred from one sentence of business language and a read of how the module's existing entities are built. Run it again and it might pick slightly differently. One detail I liked: it didn't commit the entity blind. It ran the whole thing once as a <strong>dry run</strong>: the same code, ending in a deliberate exception, which hands back TrueChange's verdict on the in-memory model and saves nothing. Zero validation messages, no silently renamed attributes. Only then did it run for real.</p>
+
+    <p>The relationships are the part I find most telling. <code>ProductId</code> and <code>UserId</code> were never requested. They follow from "for a product" and "who wrote the review", and the <code>User</code> one is a reference to the <code>(System)</code> module, exactly the kind you'd set up through the dropdown in the attribute editor.</p>
+
+    <p>The rating is the better story, though. Instead of adding a plain <code>Integer</code> column, the agent noticed that <code>ProductCatalog_CS</code> already has a <code>ProductRating</code> static entity (<code>Star1</code> to <code>Star5</code>, with a label and a value) and pointed the review at it. Nothing in the prompt said "reuse what's already there". It read the data model first, and found it.</p>
+
+    <img src="images/mcp-in-action-review-entity.png" alt="Claude Code reporting a clean dry run and then merging and publishing the entity, with Service Studio behind it showing ProductReview newly added to the Entities tree in ProductCatalog_CS and TrueChange green">
+
+
+    <!-- ============================================================ -->
+    <h2>4. &hellip;and the screen it built</h2>
+
+    <p>Same prompt. I never typed a second one. Having settled the data model, the agent carried straight on to the UI half of the story, which is the harder part by some distance. Think about what you'd normally do by hand:</p>
+    <ol>
+      <li>Create a new screen, pick a layout.</li>
+      <li>Add a screen aggregate, set the review entity as the source, add a join to Product to get the product name.</li>
+      <li>Drag a Table onto the screen, bind it to the aggregate.</li>
+      <li>Add Expression widgets in each column for each field.</li>
+      <li>Add a Pagination block, wire it to the aggregate's count and page size.</li>
+    </ol>
+
+    <p>Claude did all of it. Step 2 was never asked for: nothing in the prompt mentions an aggregate or a join. It follows from the fact that the screen has to show a product <em>name</em>, a rating and a user name while the reviews live in their own entity, so the data has to be joined, three times over. The agent worked that out for itself.</p>
+
+    <p>Step 5 is where it stopped and asked. OutSystems UI's <code>Pagination</code> block isn't one of the blocks this module consumes, and the agent can't add a dependency (see the trade-offs below). So it laid out the two routes and let me pick: tick the block in Manage Dependencies and use it, or hand-build a pager from native widgets and need no new reference. I took the block, because that's what I'd do on a real project. Which made the tick list two items long: the new entity, and <code>Pagination</code>.</p>
+
+    <div class="built-summary">
+      <h4>What Claude built</h4>
+      <table>
+        <tr><td>Screen</td><td><strong>ProductReviews</strong> in <code>ProductCatalog</code> &rarr; MainFlow, with LayoutTopMenu and the app's Menu block, Anonymous + Registered roles</td></tr>
+        <tr><td>Inputs</td><td><code>ProductId</code> and <code>MenuItemId</code>, both mandatory &middot; the same signature the existing Product screen already has</td></tr>
+        <tr><td>Aggregate</td><td><code>GetProductReviewsByProductId</code>: the review entity inner-joined to Product, to (System) User and to ProductRating, filtered on the product, newest first</td></tr>
+        <tr><td>Widget tree</td><td>Table &rarr; Product &middot; Rating &middot; Review &middot; Date &middot; Reviewer, wrapped in a loading state and an empty state (an OutSystems UI BlankSlate reading &ldquo;This product has no reviews yet.&rdquo;)</td></tr>
+        <tr><td>Pagination</td><td>The OutSystems UI <code>Pagination</code> block &middot; <code>MaxRecords</code>, <code>TotalCount</code> and <code>StartIndex</code> bound to the aggregate, <code>OnNavigate</code> &rarr; a <code>Refresh</code> screen action that assigns the new index and runs Refresh Data</td></tr>
+      </table>
+    </div>
+
+    <p>The screen is where that dry run earned its keep. The first pass came back with <strong>14 validation errors</strong>, every one the same root cause: the platform had renamed the aggregate. Ask for <code>GetProductReviews</code>, then add a filter that reads like a navigation filter (<code>ProductReview.ProductId = ProductId</code>) and Service Studio renames it <code>GetProductReviewsByProductId</code> for you, exactly as it does when you build one by hand. Every expression written against the name I'd asked for was now pointing at nothing: the table source, all five column expressions, both If conditions, the pagination's <code>TotalCount</code>. The fix was to stop hard-coding the name and read it back off the model after the filter was in place. Second dry run: clean. Nothing had been saved in between, which is the point of probing before you commit.</p>
+
+    <p>One more thing this run settled. <em>Within</em> a module the agent chains its edits: each change works on the result of the previous one, and nothing reaches Service Studio until the merge. Whether that merge stops to show you the Compare-and-Merge window or lands silently is <em>your</em> setting, not something the agent picks. For this recording I'd allowed automatic merge and publish, so both merges went straight in. <em>Across</em> modules the chaining doesn't hold. The screen's aggregate consumes an entity from a producer module, and a consumer can only see a producer element that has been <strong>published</strong> &mdash; so the order is forced: merge the entity into <code>ProductCatalog_CS</code>, publish it, and only then build the screen. Two chains, two merges, one per module.</p>
+
+    <p>The publish is the agent's to make, but only on your terms: it publishes a module when you ask it to <em>and</em> you've allowed automatic merge and publish in the MCP Server dialog. Leave that off and <code>omlPublish</code> comes back <code>blocked</code>, which is the agent telling you to press 1-Click Publish yourself. I turned it on, so <code>ProductCatalog_CS</code> went to the environment without me touching Service Studio. The publish came back <code>Uploading &middot; Compiling &middot; Deploying &middot; Outdated Consumer &middot; Done</code> &mdash; that fourth step being the platform noticing <code>ProductCatalog</code> was now behind.</p>
+
+    <p>One step did stay manual, and it's the one no documentation settled for me beforehand: <code>omlRefreshReferences</code>, the equivalent of Manage Dependencies &rarr; <em>Refresh All</em>, only updates the versions of elements you <em>already</em> reference. It does not tick a brand-new one. The new entity had to be selected in Manage Dependencies by hand before the aggregate could source it. The agent paused, told me exactly which checkboxes, and carried on when I said it was done. Two clicks, and neither can be delegated.</p>
+
+    <img src="images/mcp-in-action-reviews-screen.png" alt="Service Studio showing the ProductReviews screen in MainFlow, its widget tree expanded down to the table columns, and the GetProductReviewsByProductId aggregate with its three inner joins to Product, User and ProductRating">
+
+    <p>After the two merges, I went through it in Service Studio. The entity sat in <code>ProductCatalog_CS</code> with its three FK arrows. The screen sat in <code>MainFlow</code>, widget tree and all. The aggregate carried all three joins, with Max Records and Start Index bound to the screen variables, and the Pagination block's <code>OnNavigate</code> wired to a single <code>Refresh</code> action that moves the index and runs Refresh Data. TrueChange on both modules: clean, no errors.</p>
+
+    <div class="callout">One user story in, a working feature out across two modules: entity and three relationships in the service module, screen with a joined aggregate, table and paging in the UI module, all designed by the agent, merged and published by it too. My own work in Service Studio: approve the connection, and tick two checkboxes in Manage Dependencies.</div>
+
+
+    <!-- ============================================================ -->
+    <h2>5. What else it can do</h2>
+
+    <p>The walkthrough above shows the basics: data and UI. The MCP integration reaches a good deal further into the model:</p>
+
+    <ul>
+      <li><strong>Server actions with full flow logic</strong>: aggregates, If/Else branching, For Each loops, exception handlers, Assign nodes, calls to other actions.</li>
+      <li><strong>Client actions</strong>: the same flow capabilities, plus screen-action patterns like Refresh Data.</li>
+      <li><strong>REST APIs</strong>: both exposed (create endpoints with GET/POST/PUT/DELETE methods) and consumed (configure base URLs, request parameters, headers).</li>
+      <li><strong>BPT processes</strong>: human activities, automatic activities, decision nodes, launch-on-entity triggers.</li>
+      <li><strong>Charts and dashboards</strong>: donut, bar, column and line charts from OutSystemsCharts, with data binding and styling.</li>
+      <li><strong>Traditional Web</strong>: the same read and write capabilities, with dedicated tool variants.</li>
+      <li><strong>Roles, timers, site properties, structures, exceptions</strong>: reachable too.</li>
+    </ul>
+
+    <p>In one test, a single prompt produced a complete list screen with search, filtering by category, sortable columns, pagination, conditional tags, and an empty-state placeholder &mdash; roughly the equivalent of 30 minutes of manual work in Service Studio, done in under two.</p>
+
+
+    <!-- ============================================================ -->
+    <h2>6. The trade-offs</h2>
+
+    <p>This is a Beta Feature, and it has sharp edges. What to know before you try it:</p>
+
+    <ul>
+      <li><strong>Can't add new dependencies.</strong> The agent can only work with modules and elements already referenced in Manage Dependencies. If you need a Forge component or a new producer, add it manually first. This is a hard wall rather than a soft one: asked to add the reference in code, it comes straight back with <code>The event IModelServices.ResolveModuleSignature must be set first</code>. It cost this demo two checkboxes &mdash; the new entity, and OutSystems UI's <code>Pagination</code> block.</li>
+      <li><strong>Refresh All doesn't add elements.</strong> After you publish a producer, <code>omlRefreshReferences</code> brings existing references up to the latest version &mdash; but a <em>new</em> public entity still has to be ticked in Manage Dependencies before a consumer can use it. On this run it answered <em>&ldquo;No references needed refreshing&rdquo;</em> while the new entity sat there unreferenced. Plan that manual step into any cross-module flow.</li>
+      <li><strong>Publishing is opt-in, twice over.</strong> The agent won't publish unless you ask it to <em>and</em> you've allowed automatic merge and publish in the MCP Server dialog. Otherwise the call comes back <code>blocked</code> and the 1-Click Publish is yours. That one setting has a cost as well as a benefit: with it on the run is unattended, but the merges stop showing you the Compare-and-Merge diff. You trade the review step for the smoother ride.</li>
+      <li><strong>Silent renames.</strong> The platform renames things under you. A taken name picks up a numeric suffix (<code>GetProducts2</code>); an aggregate picks up its filter (<code>GetProductReviews</code> becomes <code>GetProductReviewsByProductId</code>). Anything already written against the old name is then dangling &mdash; 14 errors, in this run. Read names back off the model instead of hard-coding them.</li>
+      <li><strong>No undo.</strong> There is no "rewind by N saves". The session can be reset to the live module, but nothing finer. The merge step gives you a chance to review before accepting.</li>
+      <li><strong>Stylesheet edits are unreliable.</strong> CSS changes to screens and blocks sometimes don't publish, even though the merge succeeds. Theme-level CSS works reliably.</li>
+      <li><strong>Merge depends on your setting.</strong> Whether a merge opens the Compare-and-Merge dialog or auto-accepts is your Service Studio configuration, not something the agent passes or can influence. Either way the call only returns once the merge has resolved.</li>
+    </ul>
+
+    <div class="callout"><strong>Beta Feature notice:</strong> The write capabilities (mutations, merge, publish) are a Beta Feature subject to change or discontinuation. The read tools are Generally Available. See <a href="https://www.outsystems.com/legal/beta-features-agreement">outsystems.com/legal/beta-features-agreement</a>.</div>
+
+
+    <!-- ============================================================ -->
+    <h2>Closing thoughts</h2>
+
+    <p>Part 1 asked whether MCP is useful or just another protocol. One user story went in and a working feature came out across two modules, so I'd say it earns its place. What struck me on the recording was how little of the session was about the protocol at all. Once the connection is up you spend your attention on the design decisions and the two or three places the platform does something you didn't ask for.</p>
+
+    <p>What it changes is where the time goes. Clicking a screen together in Service Studio is an hour I no longer spend; reading back what the agent decided, and catching the aggregate it renamed behind my back, is twenty minutes I now do spend. You still have to know what to ask for and what a correct answer looks like. I'd rather spend the hour that way round.</p>
+
+    <p>If you want to try it, you'll need Service Studio with the MCP server enabled and <a href="https://claude.com/claude-code">Claude Code</a>. And if you missed it, <a href="mcp-under-the-hood.html">Part 1</a> covers the protocol foundations.</p>
+
+
+    <!-- ============================================================ -->
+    <h2 id="recording">The recording</h2>
+
+    <p>The run this walkthrough describes, start to finish:</p>
+
+    <!-- YouTube embed &mdash; replace YOUR_VIDEO_ID with the real ID after uploading -->
+    <div class="video-embed">
+      <div class="video-placeholder">
+        &#9654; YouTube video &mdash; replace <code>YOUR_VIDEO_ID</code> in the source
+        <!-- <iframe src="https://www.youtube.com/embed/YOUR_VIDEO_ID" allowfullscreen></iframe> -->
+      </div>
+    </div>
+
+  </main>
+
+  <footer class="site-footer">
+    <span>&copy; 2026 Ricardo Cruz</span>
+    <a href="../index.html#articles" class="back-link" style="margin-top:0;">&larr; more articles</a>
+  </footer>
+
+</div>
+
+</body>
+</html>
