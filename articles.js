@@ -1,5 +1,10 @@
 const ARTICLES = [
   {
+    title: "MCP in Action: An AI Agent Editing a Live OutSystems 11 Module",
+    date: "2026-10-18",
+    url: "articles/mcp-in-action-outsystems.html"
+  },
+  {
     title: "MCP Under the Hood: The Standardized Layer Between Agents and Your APIs",
     date: "2026-10-11",
     url: "articles/mcp-under-the-hood.html"
