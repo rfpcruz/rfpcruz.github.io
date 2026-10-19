@@ -6,6 +6,8 @@
   --dim: #565b66;
   --line: #262932;
   --accent: #5fd1c9;
+  --link: #4fa8a2;
+  --link-hover: #5fd1c9;
 
   /* stripe accent — greyscale */
   --s-blue: #3a3d45;
@@ -69,6 +71,30 @@ body {
 .site-header {
   padding: 64px 0 32px;
   border-bottom: 1px solid var(--line);
+}
+
+/* Inline links. Bare `a` keeps specificity at 0,0,1 so .site-nav a, .link-list a,
+   .back-link and .article all continue to win with their own colours. */
+a {
+  color: var(--link);
+}
+
+a:hover {
+  color: var(--link-hover);
+}
+
+/* Prose links also get an underline, so they are not signalled by colour alone. */
+.post-body a,
+.bio-list a {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  text-decoration-color: color-mix(in srgb, var(--link) 45%, transparent);
+}
+
+.post-body a:hover,
+.bio-list a:hover {
+  text-decoration-color: var(--link-hover);
 }
 
 .prompt {
